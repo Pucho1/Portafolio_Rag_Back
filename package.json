@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:ingestion": "tsx src/ingestion.ts"
+    "dev:ingestion": "tsx src/ingestion/ingestion.ts"
   },
   "keywords": [],
   "author": "",
