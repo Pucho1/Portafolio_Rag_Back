@@ -87,8 +87,6 @@ Participación en el equipo de desarrollo frontend de El País.
 * APIs REST
 * Arquitectura hexagonal
 
----
-
 ## MARK’AS — Agencia Cubana de Publicidad y Promoción
 
 **Cargo:** Líder de equipo de programación
@@ -157,8 +155,6 @@ Durante esta etapa también realizó actividades relacionadas con:
 
 El CV también indica responsabilidades relacionadas con contabilidad, administración y publicidad/promoción dentro de la organización.
 
----
-
 ## GRUPO DE ELECTRONIA PARA EL TURISMO (GET)
 
 **Cargo:** Programador
@@ -196,8 +192,6 @@ Participación en el desarrollo full stack del Bulevar de pagos de la empresa.
 * GitLab
 * GitHub
 * JWT
-
----
 
 ## CEIGE — Centro de Informatización de la Gestión de Entidades
 
@@ -244,8 +238,6 @@ Participación en el desarrollo web para el Grupo empresarial Tabacuba.
 * XAMPP
 * Odoo
 * APIs REST
-
----
 
 # Evolución profesional
 
