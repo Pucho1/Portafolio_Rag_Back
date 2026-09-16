@@ -5,7 +5,25 @@ import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
 import { MultiFileLoader } from "@langchain/classic/document_loaders/fs/multi_file";
 import { splitMarkdownDocuments } from "./splitter";
 
-function resolveMetadata(filePath: string, dataRoot: string): Record<string, string> {
+
+type metadataKeys =  "category" | "projectType" ;
+
+// Permite sugerir/autocompletar esas dos claves, pero acepta cualquier string
+type Metadata = {
+  [K in metadataKeys]?: any;
+} & {
+  [key: string]: any;
+};
+
+
+
+/**
+ * Resuelve los metadatos para un archivo dado.
+ * @param filePath 
+ * @param dataRoot 
+ * @returns Un objeto de metadatos que contiene la categoría y el tipo de proyecto (si corresponde) del archivo.
+ */
+function resolveMetadata(filePath: string, dataRoot: string): Metadata {
   const relativePath = path.relative(dataRoot, filePath);
   const segments = relativePath.split(path.sep).filter(Boolean);
 
@@ -33,6 +51,11 @@ function resolveMetadata(filePath: string, dataRoot: string): Record<string, str
   };
 }
 
+/**
+ * Colecciona todos los archivos Markdown en un directorio dado y sus subdirectorios.
+ * @param rootDir - El directorio raíz desde el cual comenzar la búsqueda de archivos Markdown.
+ * @returns Una promesa que resuelve a un array de rutas de archivos para todos los archivos Markdown encontrados.
+ */
 async function collectMarkdownFiles(rootDir: string): Promise<string[]> {
   const entries = await fs.readdir(rootDir, { withFileTypes: true });
   const files: string[] = [];
@@ -53,19 +76,23 @@ async function collectMarkdownFiles(rootDir: string): Promise<string[]> {
   return files;
 }
 
-
+/**
+ * Carga y divide documentos Markdown desde el directorio de datos.
+ * @returns Una promesa que resuelve a un array de documentos divididos en chunks.
+ */
 export async function loadAndSplitDocuments(): Promise<Document[]> {
-   const dataDir = path.resolve(process.cwd(), "data");
+  const dataDir = path.resolve(process.cwd(), "data");
   const markdownFiles = await collectMarkdownFiles(dataDir);
 
   const loader = new MultiFileLoader(markdownFiles, {
     ".md": (filePath: string) => new TextLoader(filePath),
   });
 
-    const documents = await loader.load();
+  const documents = await loader.load();
 
   const enrichedDocuments = documents.map((doc) => {
     const source = typeof doc.metadata.source === "string" ? doc.metadata.source : "";
+
     const metadata = resolveMetadata(source, dataDir);
 
     return new Document({
@@ -91,53 +118,6 @@ async function main() {
  
 
   console.log(`Número total de chunks finales: ${chunks.length}`);
-
-  // let hasta100 = 0;
-  // let de101a200 = 0;
-  // let de201a300 = 0;
-  // let de301a400 = 0;
-  // let de401a500 = 0;
-  // let mas500 = 0;
-
-  // for (const chunk of chunks) {
-  //   const length = chunk.pageContent.length;
-
-  //   if (length <= 100) hasta100++;
-  //   else if (length <= 200) de101a200++;
-  //   else if (length <= 300) de201a300++;
-  //   else if (length <= 400) de301a400++;
-  //   else if (length <= 500) de401a500++;
-  //   else mas500++;
-  // }
-
-  // console.log(`0-100: ${hasta100}`);
-  // console.log(`101-200: ${de101a200}`);
-  // console.log(`201-300: ${de201a300}`);
-  // console.log(`301-400: ${de301a400}`);
-  // console.log(`401-500: ${de401a500}`);
-  // console.log(`>500: ${mas500}`);
-
-  // const groupedChunks = new Map<string, Document[]>();
-
-  // for (const chunk of chunks) {
-  //   const headers = Array.isArray(chunk.metadata.headers) ? chunk.metadata.headers : [];
-  //   const key = headers.join(" > ");
-  //   const bucket = groupedChunks.get(key) ?? [];
-  //   bucket.push(chunk);
-  //   groupedChunks.set(key, bucket);
-  // }
-
-  // for (const [index, chunk] of chunks.entries()) {
-  //   if (chunk.pageContent.length > 500) {
-  //     console.log("\n--- Chunk > 500 ---");
-  //     console.log(`índice: ${index}`);
-  //     console.log(`longitud: ${chunk.pageContent.length}`);
-  //     console.log("metadata:");
-  //     console.log(JSON.stringify(chunk.metadata, null, 2));
-  //     console.log("pageContent:");
-  //     console.log(chunk.pageContent);
-  //   }
-  // }
 }
 
 main().catch((error) => {
