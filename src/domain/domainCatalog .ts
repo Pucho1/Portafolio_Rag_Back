@@ -4,7 +4,7 @@ import fs           from "node:fs/promises";
 import path         from "node:path";
 
 
-type DomainCatalog = {
+export type DomainCatalog = {
   categories: string[];
   projectTypes: string[];
   generatedAt: string;
