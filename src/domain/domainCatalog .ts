@@ -38,3 +38,15 @@ export async function persistDomainCatalog(catalog: DomainCatalog) {
 
   console.log(`Domain catalog persisted at: ${outPath}`);
 };
+
+export async function loadDomainCatalog(): Promise<DomainCatalog> {
+  const catalogPath = path.resolve(
+    process.cwd(),
+    "data",
+    "domainCatalog.json"
+  );
+
+  const content = await fs.readFile(catalogPath, "utf-8");
+
+  return JSON.parse(content) as DomainCatalog;
+}
