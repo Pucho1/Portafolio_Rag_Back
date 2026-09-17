@@ -1,33 +1,40 @@
 import { Document } from "@langchain/core/documents";
 
-interface DomainCatalog {
+import fs           from "node:fs/promises";
+import path         from "node:path";
+
+
+type DomainCatalog = {
   categories: string[];
   projectTypes: string[];
+  generatedAt: string;
 };
 
+
 /**
- *  Construye un catálogo de dominios a partir de un array de documentos.
- *  @param documents - Un array de documentos a partir del cual se construirá el catálogo.
- *  @returns Un objeto que contiene las categorías y tipos de proyecto únicos encontrados en los documentos.
+ *  Construye un catálogo de dominio a partir de un array de documentos.
+ *  @param documents - Un array de documentos a partir del cual se construye el catálogo.
+ *  @returns Un objeto de tipo DomainCatalog que contiene las categorías y tipos de proyecto únicos encontrados en los documentos, así como la fecha de generación del catálogo.
  */
-export const buildDomainCatalog = (  documents: Document[]): DomainCatalog => {
-  const categories = new Set<string>(); // ← eliminación de duplicados automaticamente
+export function buildDomainCatalog(documents: Document[]): DomainCatalog {
+  const categories = new Set<string>();
   const projectTypes = new Set<string>();
 
-  for (const document of documents) {
-    const { categories: category, projectType } = document.metadata;
-
-    if (typeof category === "string") {
-      categories.add(category);
-    }
-
-    if (typeof projectType === "string") {
-      projectTypes.add(projectType);
-    }
+  for (const doc of documents) {
+    if (doc.metadata.category) categories.add(doc.metadata.category);
+    if (doc.metadata.projectType) projectTypes.add(doc.metadata.projectType);
   }
 
   return {
-    categories: [...categories],
-    projectTypes: [...projectTypes],
+    categories: [...categories].sort(),
+    projectTypes: [...projectTypes].sort(),
+    generatedAt: new Date().toISOString(),
   };
+};
+
+export async function persistDomainCatalog(catalog: DomainCatalog) {
+  const outPath = path.resolve(process.cwd(), "data", "domainCatalog.json");
+  await fs.writeFile(outPath, JSON.stringify(catalog, null, 2), "utf-8");
+
+  console.log(`Domain catalog persisted at: ${outPath}`);
 };

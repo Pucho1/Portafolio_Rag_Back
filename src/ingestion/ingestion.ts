@@ -1,9 +1,12 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { Document } from "@langchain/core/documents";
-import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
-import { MultiFileLoader } from "@langchain/classic/document_loaders/fs/multi_file";
+import fs                         from "node:fs/promises";
+import path                       from "node:path";
 import { splitMarkdownDocuments } from "./splitter";
+import { buildDomainCatalog, persistDomainCatalog } from "../routing/buildDomainCatalog ";
+
+
+import { Document }        from "@langchain/core/documents";
+import { TextLoader }      from "@langchain/classic/document_loaders/fs/text";
+import { MultiFileLoader } from "@langchain/classic/document_loaders/fs/multi_file";
 
 
 type metadataKeys =  "category" | "projectType" ;
@@ -77,21 +80,18 @@ async function collectMarkdownFiles(rootDir: string): Promise<string[]> {
 }
 
 /**
- * Carga y divide documentos Markdown desde el directorio de datos.
- * @returns Una promesa que resuelve a un array de documentos divididos en chunks.
+ *  Enriquece los metadatos de un array de documentos con información adicional basada en la ruta del archivo.
+ *  @param documents - Un array de documentos a enriquecer.
+ *  @param dataDir - El directorio raíz de datos desde el cual se resuelven los metadatos.
+ *  @returns Un nuevo array de documentos con metadatos enriquecidos.
  */
-export async function loadAndSplitDocuments(): Promise<Document[]> {
-  const dataDir = path.resolve(process.cwd(), "data");
-  const markdownFiles = await collectMarkdownFiles(dataDir);
+function enrichDocumentMetadata(documents: Document[], dataDir: string): Document[] {
 
-  const loader = new MultiFileLoader(markdownFiles, {
-    ".md": (filePath: string) => new TextLoader(filePath),
-  });
-
-  const documents = await loader.load();
-
-  const enrichedDocuments = documents.map((doc) => {
-    const source = typeof doc.metadata.source === "string" ? doc.metadata.source : "";
+   const enrichedDocuments = documents.map((doc) => {
+    const source = typeof doc.metadata.source === "string" 
+      ? doc.metadata.source 
+      : ""
+    ;
 
     const metadata = resolveMetadata(source, dataDir);
 
@@ -104,23 +104,45 @@ export async function loadAndSplitDocuments(): Promise<Document[]> {
     });
   });
 
-  console.log(`Número de Documents originales: ${enrichedDocuments.length}`);
+  return enrichedDocuments;
+}
+
+/**
+ * Carga documentos Markdown desde el directorio de datos.
+ * @returns Una promesa que resuelve a un array de documentos.
+ */
+async function loadDocuments(markdownFiles: string[], dataDir: string): Promise<Document[]> {
+
+  const loader = new MultiFileLoader(markdownFiles, {
+    ".md": (filePath: string) => new TextLoader(filePath),
+  }); // Crea un cargador de múltiples archivos para los archivos Markdown encontrados
+
+  const documents = await loader.load();
+
+  return documents;
+}
+
+export async function ingestDoc(): Promise<Document[]> {
+
+  const dataDir = path.resolve(process.cwd(), "data"); // Directorio raíz de datos
+  const markdownFiles = await collectMarkdownFiles(dataDir); // Obtengo todas las rutas  y subrutas de archivos Markdown
+
+  const documentsLoders = await loadDocuments(markdownFiles, dataDir);
+
+  const enrichedDocuments = enrichDocumentMetadata(documentsLoders, dataDir);
+
+  const catalog = buildDomainCatalog(enrichedDocuments);
+  await persistDomainCatalog(catalog);
 
 
   const chunks = await splitMarkdownDocuments(enrichedDocuments);
 
+  console.log(`Número total de chunks finales: ${chunks.length}`);
+
   return chunks;
 }
 
-async function main() {
-
-  const chunks = await loadAndSplitDocuments();
- 
-
-  console.log(`Número total de chunks finales: ${chunks.length}`);
-}
-
-main().catch((error) => {
+ingestDoc().catch((error) => {
   console.error("Error en la ingestión contextual:", error);
   process.exit(1);
 });
