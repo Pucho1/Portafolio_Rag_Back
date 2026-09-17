@@ -8,6 +8,7 @@ import { ingestDoc }  from "../ingestion/ingestion";
 import { reciprocalRankFusion }   from "./helpers/reciprocarlRankFunctionCustom";
 
 import "dotenv/config";
+import { getImportantDomainDocs } from "../routing/router";
 
 /**
  * Creo el modelo de embeddings de OpenAI para poder generar embeddings de texto.
@@ -27,7 +28,7 @@ async function main() {
 
 
 
-	const chunks	 = await ingestDoc();
+	const chunks = await ingestDoc();
 
 	// const texts 	 = chunks.map((chunk) => chunk.pageContent); // Extraigo el contenido de los chunks para generar los embeddings
 	// const vectors  = await embeddings.embedDocuments(texts); // Genero los embeddings de los textos
@@ -42,29 +43,13 @@ async function main() {
 
 
   
-  //-----MMR  RETRIEVER--------
-	/// MMR (Maximal Marginal Relevance) es un algoritmo de recuperación de información 
-	// que busca maximizar la relevancia y la diversidad de los resultados de búsqueda.
-
-	const retrieverResult = vectorStore.asRetriever({
-		// searchType: "mmr", // Tipo de búsqueda: MMR (Maximal Marginal Relevance) si la quito retriver normal
-		searchKwargs: {
-			fetchK: 10,
-		},
-		k: 6,
-		// filter: (doc) => doc.metadata.category === "experience",
-	});
-
-
-
 	//  ------BM25  RETRIEVER-------
 	// (Best Matching 25) es un algoritmo de recuperación de información basado en el modelo de espacio vectorial.
 	//  BM25 es una mejora del modelo de espacio vectorial tradicional, que tiene en cuenta la frecuencia de los términos 
 	//  y la longitud de los documentos para calcular la relevancia de un documento con respecto a una consulta.
 	
-	const bm25Retriever = BM25Retriever.fromDocuments(chunks, {
-		k: 6,
-	});
+
+
 
 
 
@@ -79,17 +64,16 @@ async function main() {
 		model: "rerank-multilingual-v3.0",
 	});
 
+  const getContentPreview = (
+    doc: Document,
+    length = 120
+  ): string => {
+    const content = doc.pageContent.replace(/\s+/g, " ").trim();
 
-
-	// const retriever = vectorStore.asRetriever({
-	// 	k: 10,
-	// });
-	// const documents = await retriever.invoke(queries[1]);
-
-	// console.dir(documents, { depth: null, colors: true });
-
-	// console.log(`Indexed ${vectors.length} chunks.`);
-
+    return content.length > length
+      ? `${content.slice(0, length)}...`
+      : content;
+  };
 
 	/**
    * Obtiene la etiqueta para un documento dado.
@@ -112,46 +96,89 @@ async function main() {
   ) => {
     console.log(`\n--- ${title} ---`);
 
-    documents.forEach((doc, index) => {
-      console.log(
-        `${index + 1}. ${getDocumentLabel(doc)}`
-      );
-    });
+  documents.forEach((doc, index) => {
+    console.log( JSON.stringify(doc, null, 2)   );
+
+    console.log(
+      `   content: ${getContentPreview(doc)}`
+    );
+  });
   };
 
   const logRRF = (results: Document[]) => {
     console.log("\n--- HYBRID / RRF ---");
 
     results.forEach((doc, index) => {
-      console.log(
-        `${index + 1}. ${getDocumentLabel(doc)}`
-      );
+      console.log(    console.log( JSON.stringify(doc, null, 2)   ))
+
     });
   };
 
 
 	for (const query of queries) {
 
-    // console.log("\n");
-    // console.log("==============================================");
-    // console.log(`QUERY: ${query}`);
-    // console.log("==============================================");
+    console.log("\n");
+    console.log("==============================================");
+    console.log(`QUERY: ${query}`);
+    console.log("==============================================");
+
+    const routerResult = await getImportantDomainDocs(query);
+
+    console.log("\n--- ROUTER RESULT ---");
+    console.log(`Query: ${routerResult.query}`);
+    console.log(`Category: ${routerResult.category}`);
+    console.log(`Project Type: ${routerResult.projectType}`);
+
+    const categories = routerResult.category ?? [];
+    const projectTypes = routerResult.projectType ?? [];
+
+    const retrieverResult = vectorStore.asRetriever({
+      searchKwargs: {
+        fetchK: 10,
+      },
+      k: 6,
+      filter: (doc) => {
+        const categoryMatches =
+          categories.length === 0 || categories.includes(doc.metadata.category);
+        const projectTypeMatches =
+          projectTypes.length === 0 || projectTypes.includes(doc.metadata.projectType);
+
+        return categoryMatches && projectTypeMatches;
+      },
+    });
+
+    const filteredDocuments = chunks.filter(
+      (doc) => {
+        const categoryMatches =
+          categories.length === 0 || categories.includes(doc.metadata.category);
+        const projectTypeMatches =
+          projectTypes.length === 0 || projectTypes.includes(doc.metadata.projectType);
+        return categoryMatches && projectTypeMatches;
+      }
+    );
+
+  
+    const bm25Retriever = BM25Retriever.fromDocuments(filteredDocuments, {
+      k: 6,
+    });
+    
+
 
     const [vectorResults, bm25Results] = await Promise.all([
       retrieverResult.invoke(query),
       bm25Retriever.invoke(query),
     ]);
 
-    // logDocuments("VECTOR", vectorResults);
+    logDocuments("VECTOR", vectorResults);
 
-    // logDocuments("BM25", bm25Results);
+    logDocuments("BM25", bm25Results);
 
     const hybridResults = reciprocalRankFusion(
       vectorResults,
       bm25Results,
     );
 
-    // logRRF(hybridResults);
+    logRRF(hybridResults);
 
     const rerankedDocuments = await cohereRerank.rerank(
       hybridResults,
