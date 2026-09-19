@@ -22,13 +22,13 @@ const vectorStore = new MemoryVectorStore(embeddings);
 async function main() {
 	const queries = [
     "¿Qué tecnologías utiliza Miguel para desarrollar aplicaciones frontend?",
-    "¿Dónde ha trabajado profesionalmente Miguel?",
-    "¿Qué proyectos ha realizado Miguel relacionados con IA?",
+    // "¿Dónde ha trabajado profesionalmente Miguel?",
+    // "¿Qué proyectos ha realizado Miguel relacionados con IA?",
   ];
 
 
 
-	const chunks = await ingestDoc();
+	const {chunks, parents} = await ingestDoc();
 
 	// const texts 	 = chunks.map((chunk) => chunk.pageContent); // Extraigo el contenido de los chunks para generar los embeddings
 	// const vectors  = await embeddings.embedDocuments(texts); // Genero los embeddings de los textos
@@ -64,6 +64,10 @@ async function main() {
 		model: "rerank-multilingual-v3.0",
 	});
 
+
+
+
+
   const getContentPreview = (
     doc: Document,
     length = 120
@@ -82,6 +86,8 @@ async function main() {
    */
   const getDocumentLabel = (doc: Document): string => {
     const headers = doc.metadata.headers;
+    const meta = doc.metadata;
+    console.log("headers: ", headers, " | meta: ", meta);
 
     if (Array.isArray(headers) && headers.length > 0) {
       return headers.join(" > ");
@@ -90,26 +96,21 @@ async function main() {
     return "Sin contexto";
   };
 
-  const logDocuments = (
-    title: string,
-    documents: Document[]
-  ) => {
+  const logDocuments = (    title: string,    documents: Document[]  ) => {
     console.log(`\n--- ${title} ---`);
 
-  documents.forEach((doc, index) => {
-    console.log( JSON.stringify(doc, null, 2)   );
-
-    console.log(
-      `   content: ${getContentPreview(doc)}`
-    );
-  });
+    documents.forEach((doc, index) => {
+     console.log(`${index + 1}. ${getDocumentLabel(doc)}`);
+    });
   };
 
   const logRRF = (results: Document[]) => {
     console.log("\n--- HYBRID / RRF ---");
 
     results.forEach((doc, index) => {
-      console.log(    console.log( JSON.stringify(doc, null, 2)   ))
+      // console.log(    console.log( JSON.stringify(doc, null, 2)   ))
+     console.log(`${index + 1}. ${getDocumentLabel(doc)}`);
+
 
     });
   };
@@ -117,25 +118,14 @@ async function main() {
 
 	for (const query of queries) {
 
-    console.log("\n");
-    console.log("==============================================");
-    console.log(`QUERY: ${query}`);
-    console.log("==============================================");
-
-    const routerResult = await getImportantDomainDocs(query);
-
-    console.log("\n--- ROUTER RESULT ---");
-    console.log(`Query: ${routerResult.query}`);
-    console.log(`Category: ${routerResult.category}`);
-    console.log(`Project Type: ${routerResult.projectType}`);
+    const routerResult = await getImportantDomainDocs(query); // Obtengo los documentos más relevantes para la consulta dada ruteo.
 
     const categories = routerResult.category ?? [];
     const projectTypes = routerResult.projectType ?? [];
 
+    // hago el retriever segun los filtros obtenidos del router, para obtener los documentos más relevantes 
+    // según la categoría y el tipo de proyecto.
     const retrieverResult = vectorStore.asRetriever({
-      searchKwargs: {
-        fetchK: 10,
-      },
       k: 6,
       filter: (doc) => {
         const categoryMatches =
@@ -147,6 +137,8 @@ async function main() {
       },
     });
 
+
+    // filtro los documentos según la categoría y el tipo de proyecto obtenidos del router, para obtener los documentos más relevantes
     const filteredDocuments = chunks.filter(
       (doc) => {
         const categoryMatches =
@@ -157,7 +149,7 @@ async function main() {
       }
     );
 
-  
+    // ahora hago busqueda con BM25Retriever pero ya sobre los doccs filtrados a mano
     const bm25Retriever = BM25Retriever.fromDocuments(filteredDocuments, {
       k: 6,
     });
@@ -169,9 +161,12 @@ async function main() {
       bm25Retriever.invoke(query),
     ]);
 
-    logDocuments("VECTOR", vectorResults);
+    // console.log(`\n\vectorresults: "${vectorResults.length}" | bm25results: "${bm25Results.length}"`);
+    // console.log(`\n\vectorresults: "${JSON.stringify(vectorResults[0])}" | bm25results: "${JSON.stringify(bm25Results[0])}"`);
 
-    logDocuments("BM25", bm25Results);
+    // logDocuments("VECTOR", vectorResults);
+
+    // logDocuments("BM25", bm25Results);
 
     const hybridResults = reciprocalRankFusion(
       vectorResults,
