@@ -122,7 +122,7 @@ async function loadDocuments(markdownFiles: string[], dataDir: string): Promise<
   return documents;
 }
 
-export async function ingestDoc(): Promise<Document[]> {
+export async function ingestDoc(): Promise<{ chunks: Document[]; parents: Map<string, Document> }> {
 
   const dataDir = path.resolve(process.cwd(), "data"); // Directorio raíz de datos
   const markdownFiles = await collectMarkdownFiles(dataDir); // Obtengo todas las rutas  y subrutas de archivos Markdown
@@ -138,26 +138,7 @@ export async function ingestDoc(): Promise<Document[]> {
   const {chunks, parents} = await splitMarkdownDocuments(enrichedDocuments);
 
 
-
-console.log("\n========== PARENTS ==========\n");
-
-for (const [id, parent] of parents) {
-  console.log({
-    id,
-    title: parent.metadata.parentTitle,
-    source: parent.metadata.source,
-    category: parent.metadata.category,
-  });
-}
-
-console.log("\n=============================\n");
-
-
-  
-  console.log(`Número total de chunks finales: ${chunks.length}`);
-  console.log(`Número total de padres: ${parents.size}`);
-
-  return chunks;
+  return {  chunks, parents };
 }
 
 ingestDoc().catch((error) => {
