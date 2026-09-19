@@ -4,7 +4,7 @@
 
 **Cargo:** Programador
 **Periodo:** Diciembre de 2022 – Enero de 2025
-**Ubicaciones:** La Habana, Cuba; Montevideo, Uruguay; España , Zaragoza
+**Ubicaciones:** La Habana, Cuba; Montevideo, Uruguay; España, Zaragoza
 
 Desarrollo y mantenimiento de soluciones de software para diferentes proyectos y clientes.
 
@@ -239,7 +239,7 @@ Participación en el desarrollo web para el Grupo empresarial Tabacuba.
 * Odoo
 * APIs REST
 
-# Evolución profesional
+## Evolución profesional
 
 La trayectoria profesional documentada muestra experiencia progresiva en diferentes áreas del desarrollo de software:
 

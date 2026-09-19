@@ -8,14 +8,10 @@ No todos los repositorios públicos deben interpretarse como experiencia profesi
 
 Por este motivo, los repositorios se clasifican según su relación con el perfil.
 
----
-
-# Proyectos de Inteligencia Artificial
-
 ## Portafolio_Rag_Back
 
-**Tipo:** Proyecto personal
-**Estado:** En desarrollo
+**Tipo:** Proyecto personal  
+**Estado:** En desarrollo  
 **Lenguaje principal:** TypeScript
 
 Proyecto utilizado para construir un sistema RAG orientado a crear un gemelo digital profesional.
@@ -35,11 +31,9 @@ Tecnologías y conceptos relacionados:
 
 Este proyecto constituye el proyecto actual de aprendizaje y desarrollo del ecosistema RAG utilizado para el gemelo digital.
 
----
-
 ## LangChainAgent
 
-**Tipo:** Proyecto personal / aprendizaje
+**Tipo:** Proyecto personal / aprendizaje  
 **Lenguaje:** Python
 
 Proyecto experimental orientado al desarrollo de agentes utilizando el ecosistema LangChain.
@@ -48,11 +42,9 @@ Forma parte del aprendizaje práctico de arquitecturas basadas en modelos de len
 
 Debe considerarse como evidencia de experimentación y aprendizaje con LangChain, no como evidencia aislada de experiencia profesional.
 
----
-
 ## MCPserver
 
-**Tipo:** Proyecto personal
+**Tipo:** Proyecto personal  
 **Área:** Inteligencia Artificial / MCP
 
 Servidor MCP desarrollado para experimentar y trabajar de forma práctica con Model Context Protocol.
@@ -73,24 +65,18 @@ También incluye elementos relacionados con despliegue, calidad y observabilidad
 
 Este proyecto constituye una de las principales evidencias públicas del trabajo práctico de Miguel con MCP.
 
----
-
 ## weather_MCP_Server
 
-**Tipo:** Proyecto personal / experimentación
+**Tipo:** Proyecto personal / experimentación  
 **Área:** MCP
 
 Servidor MCP orientado a proporcionar capacidades relacionadas con información meteorológica.
 
 Se considera evidencia complementaria de experimentación práctica con Model Context Protocol y desarrollo de herramientas para sistemas basados en IA.
 
----
-
-# Proyectos de desarrollo de software
-
 ## Task-Manager
 
-**Tipo:** Proyecto personal
+**Tipo:** Proyecto personal  
 **Área:** Frontend / React
 
 Aplicación desarrollada utilizando tecnologías modernas del ecosistema React.
@@ -112,11 +98,9 @@ El proyecto incluye organización por funcionalidades, gestión de estado remoto
 
 Este repositorio constituye evidencia pública de experiencia práctica con React, TypeScript, TanStack Query, testing y arquitectura frontend.
 
----
-
 ## Tienda-Outlet
 
-**Tipo:** Proyecto personal
+**Tipo:** Proyecto personal  
 **Área:** Frontend / DevOps
 
 Aplicación web desarrollada con React y TypeScript.
@@ -133,11 +117,9 @@ El proyecto también contiene componentes relacionados con despliegue y automati
 
 Este repositorio proporciona evidencia de la combinación de desarrollo frontend con herramientas de contenedorización, CI/CD y calidad de código.
 
----
-
 ## Microfrontend
 
-**Tipo:** Proyecto personal / experimentación
+**Tipo:** Proyecto personal / experimentación  
 **Área:** Arquitectura frontend
 
 Proyecto relacionado con arquitectura de microfrontends y la integración de tecnologías frontend.
@@ -146,31 +128,25 @@ Incluye experimentación con Angular y React.
 
 Constituye evidencia complementaria de conocimiento sobre arquitecturas frontend modulares y microfrontends.
 
----
-
 ## MF-React
 
-**Tipo:** Proyecto personal / experimentación
+**Tipo:** Proyecto personal / experimentación  
 **Área:** React / Microfrontends
 
 Proyecto relacionado con la utilización de React dentro de una arquitectura de microfrontends.
 
 Se considera evidencia secundaria de experimentación con arquitecturas frontend distribuidas.
 
----
-
 ## Products_Back
 
-**Tipo:** Proyecto personal
+**Tipo:** Proyecto personal  
 **Área:** Backend
 
 Proyecto backend desarrollado utilizando TypeScript.
 
 Constituye evidencia complementaria de desarrollo backend dentro del ecosistema TypeScript/Node.js.
 
----
-
-# Otros repositorios
+## Otros repositorios
 
 El perfil público de GitHub contiene además repositorios relacionados con aprendizaje y experimentación en diferentes tecnologías.
 
@@ -190,9 +166,7 @@ Estos repositorios no deben considerarse automáticamente experiencia profesiona
 
 Su presencia en GitHub indica que Miguel ha experimentado o trabajado con las tecnologías correspondientes, pero el nivel de experiencia debe determinarse utilizando también `experience.md`, `skills.md` y los proyectos específicos.
 
----
-
-# Clasificación de evidencia
+## Clasificación de evidencia
 
 Para interpretar correctamente la información de GitHub se utilizan las siguientes categorías:
 
@@ -228,9 +202,7 @@ Estos proyectos no deben utilizarse por sí solos para afirmar experiencia profe
 
 La experiencia profesional debe determinarse principalmente a partir de `experience.md` y del CV. Un repositorio público no debe considerarse automáticamente parte de la experiencia profesional.
 
----
-
-# Regla de interpretación
+## Regla de interpretación
 
 La información obtenida de GitHub representa **evidencia técnica pública**, no una descripción completa de la trayectoria profesional.
 

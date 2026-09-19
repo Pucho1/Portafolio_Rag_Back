@@ -69,11 +69,9 @@ Tecnologías y frameworks con los que ha trabajado o está trabajando:
 
 El nivel de experiencia y el contexto de uso de cada tecnología deben determinarse a partir de los proyectos y evidencias correspondientes, evitando asumir que todas tienen el mismo grado de dominio.
 
----
+## Desarrollo de software
 
-# Desarrollo de software
-
-## JavaScript / TypeScript
+### JavaScript / TypeScript
 
 JavaScript y TypeScript constituyen una parte central de su experiencia profesional y personal.
 
@@ -87,7 +85,7 @@ Experiencia en:
 * Aplicaciones full stack.
 * Integración con servicios externos.
 
-## React
+### React
 
 Experiencia profesional y personal desarrollando aplicaciones con React.
 
@@ -105,7 +103,7 @@ Tecnologías y herramientas relacionadas:
 * Material UI.
 * Bootstrap.
 
-## Angular
+### Angular
 
 Experiencia profesional desarrollando aplicaciones con Angular.
 
@@ -116,7 +114,7 @@ Tecnologías y herramientas relacionadas:
 * Axios.
 * TanStack Query.
 
-## Vue.js
+### Vue.js
 
 Experiencia profesional con Vue.js.
 
@@ -127,7 +125,7 @@ Tecnologías relacionadas:
 * Vuetify.
 * Vue DevTools.
 
-## Node.js
+### Node.js
 
 Experiencia en desarrollo backend y full stack utilizando Node.js.
 
@@ -139,9 +137,7 @@ Experiencia en desarrollo backend y full stack utilizando Node.js.
 * Autenticación.
 * Arquitectura de aplicaciones.
 
----
-
-# Backend y APIs
+## Backend y APIs
 
 Experiencia desarrollando servicios backend y APIs.
 
@@ -158,9 +154,7 @@ Tecnologías y conceptos:
 
 También cuenta con experiencia previa utilizando Python y Django para desarrollo web.
 
----
-
-# Bases de datos
+## Bases de datos
 
 Experiencia trabajando con bases de datos relacionales y diseño de estructuras de datos.
 
@@ -171,9 +165,7 @@ Tecnologías:
 
 También ha trabajado en actividades relacionadas con arquitectura y diseño de bases de datos.
 
----
-
-# Testing y calidad
+## Testing y calidad
 
 Experiencia incorporando pruebas y herramientas de calidad en proyectos frontend y full stack.
 
@@ -194,9 +186,7 @@ Tecnologías y herramientas:
 * Integración.
 * Calidad estática del código.
 
----
-
-# DevOps y CI/CD
+## DevOps y CI/CD
 
 Experiencia trabajando con procesos de integración y despliegue continuo.
 
@@ -212,9 +202,7 @@ Tecnologías y herramientas:
 
 También posee experiencia utilizando GitFlow y trabajando con flujos colaborativos de desarrollo.
 
----
-
-# Arquitectura de software
+## Arquitectura de software
 
 Experiencia y conocimientos relacionados con:
 
@@ -226,9 +214,7 @@ Experiencia y conocimientos relacionados con:
 * Diseño de APIs.
 * Arquitectura de bases de datos.
 
----
-
-# Frontend y UI
+## Frontend y UI
 
 Experiencia desarrollando interfaces web utilizando diferentes ecosistemas frontend.
 
@@ -247,9 +233,7 @@ Tecnologías y herramientas:
 
 También posee experiencia trabajando con Figma para diseño y colaboración en interfaces.
 
----
-
-# Control de versiones y colaboración
+## Control de versiones y colaboración
 
 Herramientas:
 
@@ -260,9 +244,7 @@ Herramientas:
 
 Experiencia trabajando en equipos de desarrollo y utilizando flujos colaborativos de control de versiones.
 
----
-
-# Metodologías y liderazgo
+## Metodologías y liderazgo
 
 Experiencia trabajando con metodologías ágiles, incluyendo Scrum.
 
@@ -270,9 +252,7 @@ También cuenta con experiencia como líder técnico y gestionando equipos de de
 
 En una de sus experiencias profesionales fue responsable de un equipo de siete programadores.
 
----
-
-# Relación entre skills y evidencia
+## Relación entre skills y evidencia
 
 Las tecnologías descritas en este documento deben interpretarse junto con `experience.md`, `github.md` y los documentos de proyectos.
 

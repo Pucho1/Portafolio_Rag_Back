@@ -4,9 +4,7 @@ Este documento contiene los proyectos personales y de aprendizaje de Miguel rela
 
 Los proyectos descritos aquí representan diferentes etapas de aprendizaje y desarrollo. No todos deben interpretarse como experiencia profesional.
 
----
-
-# Portafolio RAG Backend
+## Portafolio RAG Backend
 
 **Repositorio:** `Portafolio_Rag_Back`
 
@@ -14,7 +12,7 @@ Los proyectos descritos aquí representan diferentes etapas de aprendizaje y des
 **Estado:** En desarrollo
 **Lenguaje principal:** TypeScript
 
-## Objetivo
+### Objetivo
 
 Desarrollar un sistema de Inteligencia Artificial capaz de actuar como un **gemelo digital profesional** de Miguel.
 
@@ -32,7 +30,7 @@ El sistema no está diseñado como un asistente generalista.
 
 Su dominio debe permanecer limitado al conocimiento disponible sobre Miguel y debe rechazar preguntas que estén fuera de ese ámbito.
 
-## Arquitectura de conocimiento
+### Arquitectura de conocimiento
 
 La información del sistema se está organizando en diferentes documentos Markdown para facilitar su mantenimiento y mejorar posteriormente el proceso de recuperación.
 
@@ -52,63 +50,59 @@ data/
 
 Estos documentos constituyen la fuente de conocimiento que posteriormente será procesada mediante un pipeline RAG.
 
-## Tecnologías
+### Tecnologías
 
 * TypeScript.
 * LangChain.js.
 * Large Language Models.
 * RAG.
 
-## Estado actual
+### Estado actual
 
 El proyecto se encuentra en fase de construcción de la Knowledge Base.
 
 La primera etapa consiste en organizar y validar la información antes de incorporar embeddings, almacenamiento vectorial y retrieval.
 
----
-
-# LangChainAgent
+## LangChainAgent
 
 **Repositorio:** `LangChainAgent`
 
 **Tipo:** Proyecto personal / aprendizaje
 **Lenguaje:** Python
 
-## Objetivo
+### Objetivo
 
 Proyecto experimental desarrollado para aprender y trabajar con el ecosistema LangChain y arquitecturas basadas en agentes de Inteligencia Artificial.
 
 El proyecto forma parte del proceso de aprendizaje práctico sobre sistemas que utilizan modelos de lenguaje junto con herramientas y lógica de ejecución.
 
-## Tecnologías
+### Tecnologías
 
 * Python.
 * LangChain.
 * Large Language Models.
 * Agentes de IA.
 
-## Contexto
+### Contexto
 
 Este proyecto representa una etapa del aprendizaje de Miguel en arquitecturas de agentes y constituye una base práctica para comprender posteriormente sistemas más complejos de orquestación.
 
 No debe interpretarse por sí solo como evidencia de experiencia profesional con agentes.
 
----
-
-# MCPserver
+## MCPserver
 
 **Repositorio:** `MCPserver`
 
 **Tipo:** Proyecto personal
 **Área:** Model Context Protocol
 
-## Objetivo
+### Objetivo
 
 Desarrollar un servidor MCP para experimentar de forma práctica con **Model Context Protocol** y la integración entre sistemas de Inteligencia Artificial y herramientas externas.
 
 El proyecto utiliza una arquitectura modular y separa diferentes responsabilidades del servidor.
 
-## Componentes
+### Componentes
 
 La estructura del proyecto incluye componentes relacionados con:
 
@@ -122,7 +116,7 @@ La estructura del proyecto incluye componentes relacionados con:
 * Tools.
 * Tests.
 
-## Capacidades técnicas exploradas
+### Capacidades técnicas exploradas
 
 El proyecto permite trabajar con conceptos relacionados con:
 
@@ -137,7 +131,7 @@ El proyecto permite trabajar con conceptos relacionados con:
 * Testing.
 * Observabilidad.
 
-## Observabilidad
+### Observabilidad
 
 El proyecto también incorpora trabajo relacionado con **Langfuse** para observabilidad y trazabilidad de aplicaciones basadas en IA.
 
@@ -149,7 +143,7 @@ Esto permite estudiar aspectos como:
 * Errores.
 * Observabilidad de aplicaciones de IA.
 
-## Tecnologías
+### Tecnologías
 
 * Python.
 * MCP.
@@ -160,34 +154,30 @@ Esto permite estudiar aspectos como:
 * Jenkins.
 * Sonar.
 
-## Relevancia
+### Relevancia
 
 Este proyecto constituye una de las principales evidencias públicas del trabajo práctico de Miguel con MCP y de su interés por construir infraestructura alrededor de sistemas basados en modelos de lenguaje.
 
----
-
-# Weather MCP Server
+## Weather MCP Server
 
 **Repositorio:** `weather_MCP_Server`
 
 **Tipo:** Proyecto personal / experimentación
 **Área:** Model Context Protocol
 
-## Objetivo
+### Objetivo
 
 Proyecto experimental orientado a desarrollar un servidor MCP relacionado con información meteorológica.
 
 El proyecto sirve como ejercicio práctico para comprender cómo exponer capacidades mediante MCP y cómo pueden ser utilizadas por sistemas basados en modelos de lenguaje.
 
-## Relevancia
+### Relevancia
 
 Constituye evidencia complementaria del trabajo práctico de Miguel con Model Context Protocol y del concepto de herramientas para sistemas de IA.
 
 Debe considerarse un proyecto de experimentación y aprendizaje, no experiencia profesional.
 
----
-
-# Evolución del aprendizaje en Inteligencia Artificial
+## Evolución del aprendizaje en Inteligencia Artificial
 
 Los proyectos muestran una evolución progresiva hacia sistemas de Inteligencia Artificial más completos:
 
@@ -214,9 +204,7 @@ Esta evolución representa el proceso de aprendizaje y construcción de Miguel d
 
 El objetivo actual es combinar conocimientos de desarrollo de software con tecnologías de IA para construir aplicaciones basadas en LLM que sean controlables, observables y orientadas a casos de uso concretos.
 
----
-
-# Tecnologías de IA trabajadas
+## Tecnologías de IA trabajadas
 
 Los proyectos documentados permiten identificar experiencia práctica o aprendizaje en:
 
@@ -237,33 +225,31 @@ El grado de experiencia debe determinarse siempre teniendo en cuenta el proyecto
 
 Una tecnología que aparece en este documento no implica necesariamente dominio avanzado.
 
----
-
-# Regla de interpretación
+## Regla de interpretación
 
 El gemelo digital debe diferenciar entre:
 
-### Tecnología estudiada
+### Criterios de clasificación
+
+#### Tecnología estudiada
 
 Miguel ha trabajado o está trabajando en el aprendizaje de la tecnología.
 
-### Proyecto experimental
+#### Proyecto experimental
 
 Miguel ha construido un proyecto para explorar la tecnología.
 
-### Proyecto personal
+#### Proyecto personal
 
 Miguel ha desarrollado una aplicación o sistema propio utilizando la tecnología.
 
-### Experiencia profesional
+#### Experiencia profesional
 
 La experiencia profesional solo debe afirmarse cuando exista evidencia correspondiente en `experience.md` o en las fuentes profesionales incorporadas a la Knowledge Base.
 
 El sistema no debe convertir automáticamente un proyecto personal o experimental en experiencia profesional.
 
----
-
-# Estado de la información
+## Estado de la información
 
 Este documento representa el estado actual de los proyectos públicos relacionados con Inteligencia Artificial.
 
