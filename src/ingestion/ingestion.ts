@@ -135,9 +135,27 @@ export async function ingestDoc(): Promise<Document[]> {
   await persistDomainCatalog(catalog);
 
 
-  const chunks = await splitMarkdownDocuments(enrichedDocuments);
+  const {chunks, parents} = await splitMarkdownDocuments(enrichedDocuments);
 
+
+
+console.log("\n========== PARENTS ==========\n");
+
+for (const [id, parent] of parents) {
+  console.log({
+    id,
+    title: parent.metadata.parentTitle,
+    source: parent.metadata.source,
+    category: parent.metadata.category,
+  });
+}
+
+console.log("\n=============================\n");
+
+
+  
   console.log(`Número total de chunks finales: ${chunks.length}`);
+  console.log(`Número total de padres: ${parents.size}`);
 
   return chunks;
 }

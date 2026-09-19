@@ -1,70 +1,101 @@
+import { createHash } from "node:crypto";
+
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-type Section = {
+type ParentSection = {
+  title: string;
   headers: string[];
-  level: number;
   content: string;
   metadata: Record<string, unknown>;
 };
 
-function extractMarkdownSections(markdown: string, originalMetadata: Record<string, unknown>): Section[] {
+export type SplitResult = {
+  parents: Map<string, Document>;
+  chunks: Document[];
+};
+
+const PARENT_LEVEL = 2;
+
+const splitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 400,
+  chunkOverlap: 50,
+});
+
+/**
+ * Extrae los Parents del documento.
+ *
+ * Convención del corpus:
+ *
+ * #  -> documento raíz
+ * ## -> Parent
+ * ### / #### -> contenido perteneciente al Parent
+ */
+function extractParentSections(  markdown: string,  originalMetadata: Record<string, unknown>,): ParentSection[] {
   const lines = markdown.split(/\r?\n/);
-  const sections: Section[] = [];
-  const activeHeaders: Record<number, string> = {};
-  let currentSection: Section | null = null;
+
+  const sections: ParentSection[] = [];
+
+  let currentParent: ParentSection | null = null;
+  let childHeaders: string[] = [];
 
   for (const line of lines) {
-    const match 			= line.match(/^(#{1,3})\s+(.+?)\s*#*\s*$/);
-		const sectionBaja = isMarkdownHorizontalRule(line)
+    const match = line.match(/^(#{1,4})\s+(.+?)\s*#*\s*$/);
 
-    if (match && !sectionBaja) {
-      if (currentSection?.content.trim()) {
-        sections.push(currentSection);
+    if (!match || isMarkdownHorizontalRule(line)) {
+      if (currentParent) {
+        currentParent.content += `${line}\n`;
       }
 
-      const level = match[1].length;
-      const headerText = normalizeHeader(match[2]);
+      continue;
+    }
 
-      for (const key of Object.keys(activeHeaders).map(Number)) {
-        if (key >= level) {
-          delete activeHeaders[key];
-        }
+    const level = match[1].length;
+    const title = normalizeHeader(match[2]);
+
+    // ## inicia un nuevo Parent.
+    if (level === PARENT_LEVEL) {
+      if (currentParent?.content.trim()) {
+        sections.push(currentParent);
       }
 
-      activeHeaders[level] = headerText;
+      childHeaders = [];
 
-      const orderedHeaders = Object.keys(activeHeaders)
-        .map(Number)
-        .sort((a, b) => a - b)
-        .map((key) => activeHeaders[key]);
-
-      currentSection = {
-        headers: orderedHeaders,
-        level,
+      currentParent = {
+        title,
+        headers: [title],
         content: "",
         metadata: {
           ...originalMetadata,
-          headers: orderedHeaders,
-          headerLevel: level,
+          parentTitle: title,
+          parentLevel: PARENT_LEVEL,
         },
       };
 
       continue;
     }
 
-    if (currentSection) {
-      currentSection.content += `${line}\n`;
+    // ### / #### pertenecen al Parent actual.
+    if (level > PARENT_LEVEL && currentParent) {
+      childHeaders = childHeaders.slice(0, level - PARENT_LEVEL - 1);
+
+      childHeaders.push(title);
+
+      currentParent.content += `\n${"#".repeat(level)} ${title}\n`;
+
+      continue;
     }
+
+    // # es únicamente el root del documento.
+    // No crea Parents.
   }
 
-  if (currentSection?.content.trim()) {
-    sections.push(currentSection);
+  if (currentParent?.content.trim()) {
+    sections.push(currentParent);
   }
 
   return sections;
 }
-
 
 function normalizeHeader(raw: string): string {
   return raw
@@ -74,75 +105,116 @@ function normalizeHeader(raw: string): string {
     .replace(/\s+/g, " ");
 }
 
+/**
+ * Genera un ID estable para el Parent.
+ *
+ * La identidad depende de la fuente y de su estructura,
+ * no de la posición del Parent en el array.
+ */
+function createParentId(  metadata: Record<string, unknown>,  title: string,): string {
+  const source = String(metadata.source ?? "unknown");
 
-function withContext(pageContent: string, headers: string[]): string {
-  const contextText = headers.length > 0 ? `Contexto: ${headers.join(" > ")}\n\n` : "";
-  return `${contextText}${pageContent.trim()}`;
+  const structuralIdentity = `${source}::${title}`;
+
+  return createHash("sha256")
+    .update(structuralIdentity)
+    .digest("hex");
 }
 
-function isMarkdownHorizontalRule(line: string): boolean {
-  return /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line);
-}
+function createParentDocument(  section: ParentSection,): Document {
+  const parentId = createParentId(
+    section.metadata,
+    section.title,
+  );
 
+  return new Document({
+    pageContent: section.content.trim(),
 
-export async function splitMarkdownDocuments(documents: Document[]): Promise<Document[]> {
-  const finalDocs: Document[] = [];
-  const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 400,
-    chunkOverlap: 50,
+    metadata: {
+      ...section.metadata,
+
+      parentId,
+
+      parentTitle: section.title,
+
+      parentLevel: PARENT_LEVEL,
+
+      isParent: true,
+    },
   });
+}
+
+function withContext(  content: string,  headers: string[],): string {
+  const context = headers.length
+    ? `Contexto: ${headers.join(" > ")}\n\n`
+    : "";
+
+  return `${context}${content.trim()}`;
+}
+
+async function createChildren(  parent: Document,): Promise<Document[]> {
+  const splitDocuments = await splitter.splitDocuments([
+    new Document({
+      pageContent: parent.pageContent,
+      metadata: parent.metadata,
+    }),
+  ]);
+
+  return splitDocuments.map((chunk) => {
+    const parentTitle = String(
+      parent.metadata.parentTitle ?? "",
+    );
+
+    return new Document({
+      pageContent: withContext(
+        chunk.pageContent,
+        [parentTitle],
+      ),
+
+      metadata: {
+        ...chunk.metadata,
+
+        parentId: parent.metadata.parentId,
+
+        parentTitle,
+
+        isParent: false,
+      },
+    });
+  });
+}
+
+export async function splitMarkdownDocuments(  documents: Document[],): Promise<SplitResult> {
+  const parents = new Map<string, Document>();
+  const chunks: Document[] = [];
 
   for (const document of documents) {
-    const sections = extractMarkdownSections(
+    const sections = extractParentSections(
       document.pageContent,
-      (document.metadata ?? {}) as Record<string, unknown>
+      (document.metadata ?? {}) as Record<string, unknown>,
     );
 
     for (const section of sections) {
-      const sectionContent = section.content.trim();
+      const parent = createParentDocument(section);
 
-      if (!sectionContent) continue;
+      const parentId = String(
+        parent.metadata.parentId,
+      );
 
-      if (sectionContent.length <= 400) {
-        finalDocs.push(
-          new Document({
-            pageContent: withContext(sectionContent, section.headers),
-            metadata: {
-              ...section.metadata,
-              headers: section.headers,
-              headerLevel: section.level,
-            },
-          })
-        );
-        continue;
-      }
+      parents.set(parentId, parent);
 
-      const splitDocs = await splitter.splitDocuments([
-        new Document({
-          pageContent: sectionContent,
-          metadata: {
-            ...section.metadata,
-            headers: section.headers,
-            headerLevel: section.level,
-          },
-        }),
-      ]);
+      const children = await createChildren(parent);
 
-      for (const splitDoc of splitDocs) {
-        finalDocs.push(
-          new Document({
-            pageContent: withContext(splitDoc.pageContent, section.headers),
-            metadata: {
-              ...splitDoc.metadata,
-              ...section.metadata,
-              headers: section.headers,
-              headerLevel: section.level,
-            },
-          })
-        );
-      }
+      chunks.push(...children);
     }
   }
 
-  return finalDocs;
+  return {
+    parents,
+    chunks,
+  };
+}
+
+function isMarkdownHorizontalRule(  line: string,): boolean {
+  return /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line);
 }
