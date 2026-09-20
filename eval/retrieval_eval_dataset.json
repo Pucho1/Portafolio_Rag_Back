@@ -1,0 +1,37 @@
+{
+  "descripcion": "Dataset mínimo de evaluación de retrieval - Fase 2 del roadmap. Se re-ejecuta manualmente (por ahora) cada vez que cambia chunking, embeddings, router o reranking.",
+  "fecha_creacion": "2026-09-20",
+  "queries": [
+    {
+      "id": "q1_skills_frontend",
+      "query": "¿Qué tecnologías utiliza Miguel para desarrollar aplicaciones frontend?",
+      "categoria_esperada_router": ["skills"],
+      "criterio_exito": "Debe listar sin falta React, TypeScript/JavaScript y Angular, además de otras tecnologías vinculadas al desarrollo de apps web frontend.",
+      "keywords_obligatorias": ["React", "Angular", "JavaScript"],
+      "keywords_deseables": ["TypeScript", "Vue", "Tailwind", "Redux"],
+      "estado_ultima_evaluacion": "no evaluado desde arreglo de contexto en skills.md"
+    },
+    {
+      "id": "q2_experience_donde",
+      "query": "¿Dónde ha trabajado profesionalmente Miguel?",
+      "categoria_esperada_router": ["experience", "perfil"],
+      "criterio_exito": "Debe incluir al menos 3 de las 4 empresas (Hiberus Tecnología, MARK'AS, GET, CEIGE), con fechas/período de al menos la empresa principal (Hiberus).",
+      "keywords_obligatorias": ["Hiberus"],
+      "empresas_totales": ["Hiberus Tecnología", "MARK’AS", "GRUPO DE ELECTRONIA PARA EL TURISMO", "CEIGE"],
+      "empresas_minimas_esperadas": 3,
+      "estado_ultima_evaluacion": "PASA (2026-09-20) - CEIGE, Hiberus, MARK'AS presentes con fechas. GET solo mencionado indirectamente en 'Evolución profesional', sin fechas propias.",
+      "limitacion_conocida": "Preguntas enumerativas (listar todas las N empresas) pueden no traer el 100% de los candidatos en el top-5 del reranker. Mitigable subiendo topN si se confirma que ocurre con más queries de este tipo."
+    },
+    {
+      "id": "q3_proyectos_ia",
+      "query": "¿Qué proyectos ha realizado Miguel relacionados con IA?",
+      "categoria_esperada_router": ["project"],
+      "projectType_esperado": ["ai"],
+      "criterio_exito": "Debe mencionar Portafolio RAG Backend, LangChainAgent, MCPserver y/o Weather MCP Server. NO debe presentar LangChainAgent como experiencia profesional (el propio documento lo prohíbe explícitamente).",
+      "keywords_obligatorias": ["RAG", "MCP"],
+      "keywords_deseables": ["LangChainAgent", "Weather MCP"],
+      "nota": "El chatbot y el 'agente de IA' que menciona el usuario como construidos NO están documentados en ai.md porque sus repos son privados. No se pueden usar como criterio hasta que se documenten explícitamente en la base de conocimiento.",
+      "estado_ultima_evaluacion": "PASA (verificado antes del fix de experience.md, scores de reranker altos 0.99-0.73)"
+    }
+  ]
+}
