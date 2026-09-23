@@ -1,13 +1,10 @@
-import { ChatOpenAI } from "@langchain/openai";
-
-import { retrieveContext } from "../experiments/embeddings";
-
+import { ChatOpenAI }                          from "@langchain/openai";
 import { RunnableLambda, RunnablePassthrough } from "@langchain/core/runnables";
-import { Document } from "@langchain/core/documents";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
+import { Document }                            from "@langchain/core/documents";
+import { ChatPromptTemplate }                  from "@langchain/core/prompts";
+import { StringOutputParser }                  from "@langchain/core/output_parsers";
 
-
+import { getRetrieverResult } from "../retriveal";
 import "dotenv/config";
 
 const model = new ChatOpenAI({
@@ -25,7 +22,7 @@ async function chain () {
 
     const retrivelResult = RunnablePassthrough.assign({
        context: async (input: { question: string }) => {
-            const documents = await retrieveContext(input.question);
+            const documents = await getRetrieverResult(input.question);
             return documents.map((doc: Document) => doc.pageContent).join("\n\n");
         },
     });
