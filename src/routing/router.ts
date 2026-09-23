@@ -96,13 +96,24 @@ async function validateRoute(  route: RetrievalRoute ): Promise<RetrievalRoute> 
   return route;
 }
 
-export async function getImportantDomainDocs(query: string): Promise<RetrievalRoute> {
-	const docRoute 					 = await routeQuery(query);
+async function getImportantDomainDocs(query: string): Promise<RetrievalRoute> {
+	const docRoute 			 = await routeQuery(query);
 	const validatedDocsRoute = await validateRoute(docRoute);
 
 	return validatedDocsRoute;
 };
 
+/**
+ * Obtengo los documentos más relevantes para la consulta dada ruteo.
+ * @param query 
+ * @returns 
+ */
+export async function getRouterResults (query: string) {
+  const routerDomains = await getImportantDomainDocs(query);
+  const categories = routerDomains.category ?? [];
+  const projectTypes = routerDomains.projectType ?? [];
 
+  return {categories, projectTypes};
+};
 
 
