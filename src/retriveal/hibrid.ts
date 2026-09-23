@@ -1,11 +1,9 @@
 import { BM25Retriever } 	      from "@langchain/community/retrievers/bm25";
 import { Document }             from "@langchain/core/documents";
 import { VectorStoreRetriever } from "@langchain/core/vectorstores";
+import { MemoryVectorStore }    from '@langchain/classic/vectorstores/memory';
 
 import { reciprocalRankFusion }   from "../helpers/reciprocarlRankFunctionCustom";
-import { vectorStore }            from "./store";
-
-
 
 const getValues = (categories: string[], projectTypes: string[], doc: Document) => {
 
@@ -14,9 +12,7 @@ const getValues = (categories: string[], projectTypes: string[], doc: Document) 
       const projectTypeMatches =
         projectTypes.length === 0 || projectTypes.includes(doc.metadata.projectType);
       return categoryMatches && projectTypeMatches;
-}
-
-
+};
 
 async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retriever:  BM25Retriever,  query: string): Promise<Document[]> {
   
@@ -31,7 +27,7 @@ async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retri
   );
 
   return hybridResults;
-}
+};
 
 
 /**
@@ -42,7 +38,13 @@ async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retri
  * @param chunks 
  * @returns 
  */
-export async function getHibridResults(query: string, categories: string[], projectTypes: string[], chunks: Document[] ) {
+export async function getHibridResults(
+  query: string,
+  categories: string[],
+  projectTypes: string[],
+  chunks: Document[],
+  vectorStore: MemoryVectorStore,
+) {
 
 
    // filtro los documentos según la categoría y el tipo de proyecto obtenidos del router, para obtener los documentos más relevantes
@@ -69,4 +71,4 @@ export async function getHibridResults(query: string, categories: string[], proj
   const hibridDocs = await hibridResult(retrieverResult, bm25Retriever, query);
 
   return hibridDocs;
-}
+};
