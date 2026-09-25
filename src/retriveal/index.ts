@@ -29,8 +29,6 @@ export async function getRetrieverResult(query: string): Promise<Document[]> {
   finalResponsefromParents.forEach((doc, i) => {
     console.log(`${i + 1}. [${doc.metadata.category}] ${doc.metadata.parentTitle ?? doc.metadata.headers} (${doc.pageContent.length} chars)`);
   });
-  console.log(`\nTotal padres únicos: ${finalResponsefromParents.length}`);
-  console.log(`Total chars en contexto: ${finalResponsefromParents.reduce((sum, d) => sum + d.pageContent.length, 0)}`);
 
   return finalResponsefromParents;
 };
