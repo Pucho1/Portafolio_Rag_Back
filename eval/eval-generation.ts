@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { runChain } from "../src/chain/chain";
 import { judgeCriteria } from "../src/evaluación/judge/judge";
+import { langFuseCallBack } from "../src/observability/langfuse";
 
 
 async function main(){
@@ -11,10 +12,12 @@ async function main(){
     const dataset  = JSON.parse(contents);
 
     console.log(`\nEvaluando ${dataset.casos.length} la respuesta del llm...\n`);
+
+    const handler = langFuseCallBack("eval-script", "eval-user");
     
     for ( const ownCase of dataset.casos){
 
-        const {context, answer} = await runChain(ownCase.query);
+        const {context, answer} = await runChain(ownCase.query, { callbacks: [handler] });
 
         const judgeCriteriaAnswer = await judgeCriteria(context, answer, ownCase.criterio_exito)
 
