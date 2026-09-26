@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:ingestion": "tsx src/ingestion/ingestion.ts",
-    "dev:embeddings": "tsx src/experiments/embeddings.ts"
+    "dev:embeddings": "tsx src/experiments/embeddings.ts",
+    "dev:evalgeneration": "tsx eval/eval-generation.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,9 @@
     "@langchain/core": "^1.2.9",
     "@langchain/openai": "^1.5.10",
     "@langchain/textsplitters": "^1.0.1",
+    "@langfuse/langchain": "^5.11.1",
+    "@langfuse/otel": "^5.11.1",
+    "@opentelemetry/sdk-trace-node": "^2.11.0",
     "dotenv": "^16.4.5",
     "zod": "^4.6.5"
   },
