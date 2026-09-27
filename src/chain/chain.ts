@@ -1,5 +1,7 @@
 import { ChatOpenAI }           from "@langchain/openai";
-import { RunnableConfig, RunnablePassthrough }  from "@langchain/core/runnables";
+import { 
+    RunnableConfig, 
+    RunnablePassthrough }       from "@langchain/core/runnables";
 import { Document }             from "@langchain/core/documents";
 import { ChatPromptTemplate }   from "@langchain/core/prompts";
 import { StringOutputParser }   from "@langchain/core/output_parsers";
@@ -35,8 +37,8 @@ export interface ChainResult {
 }
 
 const retrivelResult = RunnablePassthrough.assign<{ question: string }, { context: string }>({
-    context: async (input) => {
-        const documents = await getRetrieverResult(input.question);
+    context: async (input, config: RunnableConfig) => {
+        const documents = await getRetrieverResult(input.question, config);
         return documents.map((doc: Document) => doc.pageContent).join("\n\n");
     },
 });
@@ -77,9 +79,9 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
 ]);
 
 const getAnswer = RunnablePassthrough.assign<{ question: string; context: string }, { answer: string }>({
-    answer: ( input ) => {
+    answer: ( input, config: RunnableConfig ) => {
         const subChaing = chatPrompt.pipe(model).pipe(new StringOutputParser())
-        return subChaing.invoke(input)
+        return subChaing.invoke(input, config)
     }
 })
 
