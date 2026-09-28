@@ -4,6 +4,7 @@ import { retrievalRouteSchema, RetrievalRoute } from "./schema";
 import { loadDomainCatalog } from '../domain/domainCatalog ';
 
 import "dotenv/config";
+import { RunnableConfig } from "@langchain/core/runnables";
 
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
@@ -15,7 +16,7 @@ const model = new ChatOpenAI({
  * @param query 
  * @returns  Una promesa que resuelve a un objeto de ruta de recuperación que contiene la consulta reescrita, la categoría y el tipo de proyecto (si corresponde).
  */
-async function routeQuery( query: string): Promise<RetrievalRoute> {
+async function routeQuery( query: string, config?: RunnableConfig): Promise<RetrievalRoute> {
 
 	const domainCatalog = await loadDomainCatalog();
 
@@ -42,7 +43,7 @@ async function routeQuery( query: string): Promise<RetrievalRoute> {
 		${query}
 	`;
 
-  return structuredModel.invoke(prompt);
+  return structuredModel.invoke(prompt, { ...config, runName: "route-query" });
 }
 
 /**
@@ -96,8 +97,8 @@ async function validateRoute(  route: RetrievalRoute ): Promise<RetrievalRoute> 
   return route;
 }
 
-async function getImportantDomainDocs(query: string): Promise<RetrievalRoute> {
-	const docRoute 			 = await routeQuery(query);
+async function getImportantDomainDocs(query: string, config?: RunnableConfig): Promise<RetrievalRoute> {
+	const docRoute 			 = await routeQuery(query, config);
 	const validatedDocsRoute = await validateRoute(docRoute);
 
 	return validatedDocsRoute;
@@ -108,8 +109,8 @@ async function getImportantDomainDocs(query: string): Promise<RetrievalRoute> {
  * @param query 
  * @returns 
  */
-export async function getRouterResults (query: string) {
-  const routerDomains = await getImportantDomainDocs(query);
+export async function getRouterResults (query: string, config?: RunnableConfig) {
+  const routerDomains = await getImportantDomainDocs(query, config);
   const categories = routerDomains.category ?? [];
   const projectTypes = routerDomains.projectType ?? [];
 

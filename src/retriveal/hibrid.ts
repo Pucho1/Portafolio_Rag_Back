@@ -4,6 +4,16 @@ import { VectorStoreRetriever } from "@langchain/core/vectorstores";
 import { MemoryVectorStore }    from '@langchain/classic/vectorstores/memory';
 
 import { reciprocalRankFusion }   from "../helpers/reciprocarlRankFunctionCustom";
+import { RunnableConfig } from "@langchain/core/runnables";
+
+
+ export type HybridResultsArgs = {
+    query: string,
+    routerResult: { categories: string[],    projectTypes: string[],}    
+    chunks: Document[],
+    vectorStore: MemoryVectorStore,
+    config: RunnableConfig,
+  }
 
 const getValues = (categories: string[], projectTypes: string[], doc: Document) => {
 
@@ -14,11 +24,11 @@ const getValues = (categories: string[], projectTypes: string[], doc: Document) 
       return categoryMatches && projectTypeMatches;
 };
 
-async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retriever:  BM25Retriever,  query: string): Promise<Document[]> {
-  
+async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retriever:  BM25Retriever,  query: string, config?: RunnableConfig): Promise<Document[]> {
+
   const [vectorResults, bm25Results] = await Promise.all([
-    retrieverResult.invoke(query),
-    bm25Retriever.invoke(query),
+    retrieverResult.invoke(query, { ...config, runName: "vector-retriever" }),
+    bm25Retriever.invoke(query, { ...config, runName: "bm25-retriever" }),
   ]);
 
   const hybridResults = reciprocalRankFusion(
@@ -44,6 +54,7 @@ export async function getHibridResults(
   projectTypes: string[],
   chunks: Document[],
   vectorStore: MemoryVectorStore,
+  config?: RunnableConfig,
 ) {
 
 
@@ -68,7 +79,7 @@ export async function getHibridResults(
     k: 6,
   });
 
-  const hibridDocs = await hibridResult(retrieverResult, bm25Retriever, query);
+  const hibridDocs = await hibridResult(retrieverResult, bm25Retriever, query, config);
 
   return hibridDocs;
 };
