@@ -36,6 +36,9 @@ export interface ChainResult {
     answer: string;
 }
 
+/**
+ *  
+ */
 const retrivelResult = RunnablePassthrough.assign<{ question: string }, { context: string }>({
     context: async (input, config: RunnableConfig) => {
         const documents = await getRetrieverResult(input.question, config);
@@ -94,5 +97,5 @@ export async function runChain(query: string, config: RunnableConfig): Promise<C
     const chainResult = await chain.invoke({question: query}, config);
 
     return chainResult;
-}
+};
 
