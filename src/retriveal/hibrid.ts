@@ -18,10 +18,12 @@ import { RunnableConfig } from "@langchain/core/runnables";
 const getValues = (categories: string[], projectTypes: string[], doc: Document) => {
 
   const categoryMatches =
-        categories.length === 0 || categories.includes(doc.metadata.category);
-      const projectTypeMatches =
-        projectTypes.length === 0 || projectTypes.includes(doc.metadata.projectType);
-      return categoryMatches && projectTypeMatches;
+    categories.length === 0 || categories.includes(doc.metadata.category);
+
+  const projectTypeMatches =
+    projectTypes.length === 0 || projectTypes.includes(doc.metadata.projectType);
+
+  return categoryMatches && projectTypeMatches;
 };
 
 async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retriever:  BM25Retriever,  query: string, config?: RunnableConfig): Promise<Document[]> {

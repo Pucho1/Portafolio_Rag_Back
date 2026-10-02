@@ -106,12 +106,12 @@ const getGitVersion = (): string => {
 
 
 async function main() {
-    const filePath = path.resolve(process.cwd(), "eval", "generation_eval_dataset.json");
-    const contents = await fs.readFile(filePath, { encoding: "utf8" });
-    const dataset: GenerationEvalDataset = JSON.parse(contents);
-    const experimentData = getexperimentData(dataset);
+  const filePath = path.resolve(process.cwd(), "eval", "generation_eval_dataset.json");
+  const contents = await fs.readFile(filePath, { encoding: "utf8" });
+  const dataset: GenerationEvalDataset = JSON.parse(contents);
+  const experimentData = getexperimentData(dataset);
 
-    console.log(`\nEvaluando ${dataset.casos.length} la respuesta del llm...\n`);
+  console.log(`\nEvaluando ${dataset.casos.length} la respuesta del llm...\n`);
 
   try{  
     const result  = await langfuse.experiment.run({
