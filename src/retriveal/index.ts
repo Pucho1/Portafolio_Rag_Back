@@ -6,45 +6,38 @@ import {
 import { getHibridResults } from "./hibrid";
 import { getParentsInfo }   from "./parents";
 import { getReRankedDoc, RerankedDocs } from "./reranked";
-import { getRouterResults } from "../routing/router";
 import { retrievalStore }   from "./store";
-
-type RouterResult = {
-  categories: string[],
-  projectTypes: string[]
-};
+import { RouterOutput } from "../chain/chain";
 
 type QueryInput     = { query: string };
-type RouterOutput   = QueryInput   & { routerResult: RouterResult };
 type HybridOutput   = RouterOutput & { hybridResults: Document[] };
 type RerankedOutput = HybridOutput & { rerankedDocuments: RerankedDocs[] };
 
 
-export async function getRetrieverResult(query: string, config?: RunnableConfig): Promise<Document[]> {
+export async function getRetrieverResult(input: RouterOutput, config?: RunnableConfig): Promise<Document[]> {
 
-  console.log("query ======>: ", query)
+  console.log("query ======>: ", input.query)
 
   const chunks      = await retrievalStore.getChunks();
   const parents     = await retrievalStore.getParents();
   const vectorStore = await retrievalStore.getVectorStore();
 
+  const decision = input.routerResult.decision;
 
-  // cada paso recibe el config del padre y se lo pasa a sus hijos, así langfuse anida las trazas
-  const routerStep = RunnableLambda.from(
-    async (input: QueryInput, config?: RunnableConfig): Promise<RouterOutput> => ({
-      ...input,
-      routerResult: await getRouterResults(input.query, config),
-    })
-  ).withConfig({ runName: "router" });
+  if (decision.queryIntention !== "in_domain") {
+    return [];
+  }
 
+  const categories = decision.category ?? [];
+  const projectTypes = decision.projectType ?? [];
 
   const hybridStep = RunnableLambda.from(
     async (input: RouterOutput, config?: RunnableConfig): Promise<HybridOutput> => ({
       ...input,
       hybridResults: await getHibridResults(
         input.query,
-        input.routerResult.categories,
-        input.routerResult.projectTypes,
+        categories,
+        projectTypes,
         chunks,
         vectorStore,
         config,
@@ -67,13 +60,12 @@ export async function getRetrieverResult(query: string, config?: RunnableConfig)
   ).withConfig({ runName: "resolve-parents" });
 
 
-  const retrievalChain = routerStep
-    .pipe(hybridStep)
+  const retrievalChain = hybridStep
     .pipe(rerankStep)
     .pipe(parentsStep)
     .withConfig({ runName: "retrieval" });
 
-  const finalResponsefromParents = await retrievalChain.invoke({ query }, config);
+  const finalResponsefromParents = await retrievalChain.invoke( input , config);
 
 
   console.log("\n--- CONTEXTO FINAL (post-PDR) ---");
