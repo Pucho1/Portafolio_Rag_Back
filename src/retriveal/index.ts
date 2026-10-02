@@ -7,9 +7,8 @@ import { getHibridResults } from "./hibrid";
 import { getParentsInfo }   from "./parents";
 import { getReRankedDoc, RerankedDocs } from "./reranked";
 import { retrievalStore }   from "./store";
-import { RouterOutput } from "../chain/chain";
+import type { RouterOutput } from "../routing/schema";
 
-type QueryInput     = { query: string };
 type HybridOutput   = RouterOutput & { hybridResults: Document[] };
 type RerankedOutput = HybridOutput & { rerankedDocuments: RerankedDocs[] };
 

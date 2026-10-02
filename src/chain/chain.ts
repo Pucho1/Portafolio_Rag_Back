@@ -10,7 +10,7 @@ import { StringOutputParser }   from "@langchain/core/output_parsers";
 
 import { getRetrieverResult } from "../retriveal";
 import { initApp }            from "../bootstrap";
-import { RouteDecision } from "../routing/schema";
+import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults } from "../routing/router";
 
 
@@ -30,11 +30,6 @@ export interface ChainResult {
     context: string;
     answer: string;
 }
-
-
-export type RoutedInput = { question: string; decision: RouteDecision };
-type QueryInput = { query: string };
-export type RouterOutput = QueryInput & { routerResult: RoutedInput };
 
 
 /**
