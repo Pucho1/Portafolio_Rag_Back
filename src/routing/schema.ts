@@ -27,5 +27,5 @@ export type RetrievalRoute = z.infer<typeof retrievalRouteSchema>;
 export type RouteDecision = RetrievalRoute["decision"];
 
 export type QueryInput   = { query: string };
-export type RoutedInput  = { question: string; decision: RouteDecision };
+export type RoutedInput  = {decision: RouteDecision };
 export type RouterOutput = QueryInput & { routerResult: RoutedInput };
