@@ -148,6 +148,8 @@ const branch = () => RunnableBranch.from<RouterOutput, ChainResult>([
     inDomain
 ]);
 
+const finalResult = routerResult.pipe(branch);
+
 
 /**
  *  Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
@@ -156,7 +158,6 @@ const branch = () => RunnableBranch.from<RouterOutput, ChainResult>([
  * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
  */
 export async function runChain(query: string, config: RunnableConfig) {
-    const finalResult = routerResult.pipe(branch);
     return finalResult.invoke({ query }, config);
 };
 
