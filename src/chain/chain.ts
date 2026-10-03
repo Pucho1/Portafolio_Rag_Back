@@ -45,8 +45,6 @@ const routerResult = RunnableLambda.from(
     })
 ).withConfig({ runName: "router" });
 
-
-
 /**
  * Recupero los documentos relevantes para la consulta dada.
  * @param input 
@@ -58,7 +56,7 @@ const retrivelResult = RunnablePassthrough.assign<RouterOutput, { context: strin
         const documents = await getRetrieverResult(input, config);
         return documents.map((doc: Document) => doc.pageContent).join("\n\n");
     },
-});
+}).withConfig({ runName: "retrieval" });
 
 const SYSTEM_PROMPT = `
     Eres el gemelo digital de Miguel Antonio Martínez Ochandarena, hablando en primera persona como si fueras él.
@@ -96,12 +94,11 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
     answer: (input, config: RunnableConfig) => {
         const subChaing = chatPrompt.pipe(model).pipe(new StringOutputParser());
         return subChaing.invoke({
-            question: input.routerResult.question,
+            question: input.query,
             context: input.context,
         }, config);
     },
 });
-
 
 
 /**
@@ -113,7 +110,7 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
 const inDomain = retrivelResult
     .pipe(getAnswer)
     .pipe(RunnableLambda.from((input: RouterOutput & { context: string; answer: string }): ChainResult => ({
-        question: input.routerResult.question,
+        question: input.query,
         context: input.context,
         answer: input.answer,
     }))
@@ -121,20 +118,17 @@ const inDomain = retrivelResult
 
 
 const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
-    question: input.routerResult.question,
+    question: input.query,
     context: "",
     answer: "Solo puedo responder preguntas sobre mi perfil profesional.",
 }));
 
 
-
 const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResult => ({
-    question: input.routerResult.question,
+    question: input.query,
     context: "",
     answer: "No puedo ayudarte con eso.",
 }));
-
-
 
 
 /**
@@ -145,16 +139,15 @@ const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResu
  */
 export async function runChain(query: string, config: RunnableConfig) {
 
-    const routed = await routerResult.invoke({ query }, config);
-    
     const branch = RunnableBranch.from<RouterOutput, ChainResult>([
 
-        [  (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
-        [   (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
-
+        [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
+        [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
         inDomain
     ]);
 
-    return branch.invoke(routed, config);
+    const finalResult = routerResult.pipe(branch);
+
+    return finalResult.invoke({ query }, config);
 };
 

@@ -73,7 +73,6 @@ return `
 `
 }
 
-
 /**
  *  Valida la ruta de recuperación generada por el modelo contra el catálogo de dominio.
  * @param route
@@ -136,7 +135,6 @@ export async function getRouterResults(query: string, config?: RunnableConfig): 
 	const { decision } = await validateRoute(docRoute);
 
   return {
-    question: query,
     decision,
   };
 }

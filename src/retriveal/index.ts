@@ -1,13 +1,13 @@
-import { Document } from "@langchain/core/documents";
+import { Document }         from "@langchain/core/documents";
 import {
   RunnableConfig,
   RunnableLambda }          from "@langchain/core/runnables";
 
-import { getHibridResults } from "./hibrid";
-import { getParentsInfo }   from "./parents";
+import { getHibridResults }             from "./hibrid";
+import { getParentsInfo }               from "./parents";
 import { getReRankedDoc, RerankedDocs } from "./reranked";
-import { retrievalStore }   from "./store";
-import type { RouterOutput } from "../routing/schema";
+import { retrievalStore }               from "./store";
+import type { RouterOutput }            from "../routing/schema";
 
 type HybridOutput   = RouterOutput & { hybridResults: Document[] };
 type RerankedOutput = HybridOutput & { rerankedDocuments: RerankedDocs[] };
