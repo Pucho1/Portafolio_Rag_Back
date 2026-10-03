@@ -32,11 +32,16 @@ export function buildDomainCatalog(documents: Document[]): DomainCatalog {
   };
 };
 
+/**
+ *  Persiste el catálogo de dominio en un archivo JSON.
+ *  @param catalog - El catálogo de dominio a persistir.
+ *  @returns Una promesa que se resuelve cuando el catálogo ha sido escrito en el archivo.
+ *  @throws Error si ocurre un problema al escribir el archivo.
+ *  @remarks El catálogo se guarda en la ruta "data/domainCatalog.json" relativa al directorio de trabajo actual.
+ */
 export async function persistDomainCatalog(catalog: DomainCatalog) {
   const outPath = path.resolve(process.cwd(), "data", "domainCatalog.json");
   await fs.writeFile(outPath, JSON.stringify(catalog, null, 2), "utf-8");
-
-  console.log(`Domain catalog persisted at: ${outPath}`);
 };
 
 export async function loadDomainCatalog(): Promise<DomainCatalog> {
