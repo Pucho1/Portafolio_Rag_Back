@@ -90,6 +90,9 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
     ["human", HUMAN_TEMPLATE],
 ]);
 
+/**
+ * Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
+ */
 const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string }, { answer: string }>({
     answer: (input, config: RunnableConfig) => {
         const subChaing = chatPrompt.pipe(model).pipe(new StringOutputParser());
@@ -123,12 +126,27 @@ const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     answer: "Solo puedo responder preguntas sobre mi perfil profesional.",
 }));
 
-
+/**
+ * Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
+ */
 const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     question: input.query,
     context: "",
     answer: "No puedo ayudarte con eso.",
 }));
+
+/**
+ *  Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
+ * @param query 
+ * @param config 
+ * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
+ */
+const branch = () => RunnableBranch.from<RouterOutput, ChainResult>([
+
+    [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
+    [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
+    inDomain
+]);
 
 
 /**
@@ -138,16 +156,7 @@ const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResu
  * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
  */
 export async function runChain(query: string, config: RunnableConfig) {
-
-    const branch = RunnableBranch.from<RouterOutput, ChainResult>([
-
-        [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
-        [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
-        inDomain
-    ]);
-
     const finalResult = routerResult.pipe(branch);
-
     return finalResult.invoke({ query }, config);
 };
 
