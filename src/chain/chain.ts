@@ -33,10 +33,10 @@ export interface ChainResult {
 
 
 /**
- * Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
- * @param query 
- * @param config 
- * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
+ * Clasifica la consulta y añade el resultado del enrutador al payload de entrada.
+ * @param input Consulta original del usuario junto con sus metadatos.
+ * @param config Configuración opcional de ejecución de LangChain.
+ * @returns Un objeto con la misma consulta y el resultado del router asociado.
  */
 const routerResult = RunnableLambda.from(
     async (input: QueryInput, config?: RunnableConfig): Promise<RouterOutput> => ({
@@ -46,10 +46,10 @@ const routerResult = RunnableLambda.from(
 ).withConfig({ runName: "router" });
 
 /**
- * Recupero los documentos relevantes para la consulta dada.
- * @param input 
- * @param config 
- * @returns El contexto formateado con los documentos recuperados.
+ * Recupera los documentos relevantes para la consulta y los convierte en un contexto textual.
+ * @param input Resultado del router con la consulta y la intención detectada.
+ * @param config Configuración opcional de ejecución.
+ * @returns Un string con el contenido concatenado de los documentos recuperados.
  */
 const retrivelResult = RunnablePassthrough.assign<RouterOutput, { context: string }>({
     context: async (input, config: RunnableConfig) => {
@@ -91,7 +91,10 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
 ]);
 
 /**
- * Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
+ * Genera la respuesta final del modelo con el contexto recuperado y la pregunta del usuario.
+ * @param input Objeto con la consulta y el contexto ya resuelto por el enrutador y la recuperación.
+ * @param config Configuración opcional de ejecución de LangChain.
+ * @returns La respuesta textual generada por el modelo.
  */
 const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string }, { answer: string }>({
     answer: (input, config: RunnableConfig) => {
@@ -105,10 +108,9 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
 
 
 /**
- * Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
- * @param query 
- * @param config 
- * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
+ * Formatea el resultado final del flujo de respuesta en un objeto de salida estándar.
+ * @param input Entrada con la consulta, el contexto y la respuesta del modelo.
+ * @returns Un objeto con la pregunta, el contexto y la respuesta final.
  */
 const inDomain = retrivelResult
     .pipe(getAnswer)
@@ -120,14 +122,22 @@ const inDomain = retrivelResult
 ).withConfig({ runName: "format-response" });
 
 
+/**
+ * Devuelve un mensaje de rechazo cuando la consulta se encuentra fuera del dominio permitido.
+ * @param input Resultado del router con la intención detectada de la consulta.
+ * @returns Un objeto de respuesta indicando que solo puede responder sobre el perfil profesional.
+ */
 const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     question: input.query,
     context: "",
     answer: "Solo puedo responder preguntas sobre mi perfil profesional.",
 }));
 
+
 /**
- * Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
+ * Devuelve un mensaje de bloqueo cuando la consulta intenta manipular o evadir la instrucción del sistema.
+ * @param input Resultado del router con la intención detectada de manipulación.
+ * @returns Un objeto de respuesta rechazando la solicitud.
  */
 const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     question: input.query,
@@ -136,12 +146,11 @@ const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResu
 }));
 
 /**
- *  Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
- * @param query 
- * @param config 
- * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
+ * Selecciona la rama correcta del flujo según la intención detectada en la consulta.
+ * @param input Resultado del router con la intención de la consulta.
+ * @returns La rama de respuesta apropiada para ese caso.
  */
-const branch = () => RunnableBranch.from<RouterOutput, ChainResult>([
+const branch = RunnableBranch.from<RouterOutput, ChainResult>([
 
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
@@ -152,10 +161,10 @@ const finalResult = routerResult.pipe(branch);
 
 
 /**
- *  Obtengo la ruta de recuperación más relevante para la consulta dada y la valido.
- * @param query 
- * @param config 
- * @returns El resultado final de la cadena, incluyendo la pregunta, el contexto y la respuesta generada.
+ * Ejecuta la cadena completa de procesamiento para una pregunta dada.
+ * @param query Consulta escrita por el usuario.
+ * @param config Configuración de ejecución de LangChain.
+ * @returns El resultado final con la pregunta, el contexto y la respuesta generada.
  */
 export async function runChain(query: string, config: RunnableConfig) {
     return finalResult.invoke({ query }, config);
