@@ -128,9 +128,8 @@ const inDomain = retrivelResult
 ).withConfig({ runName: "format-response" });
 
 const TOO_LONG_THRESHOLD = 600;
-const TOO_SHORT_THRESHOLD = 10;
 const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
-const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener entre ${TOO_SHORT_THRESHOLD} y ${TOO_LONG_THRESHOLD} caracteres.`;
+const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener menos de ${TOO_LONG_THRESHOLD} caracteres.`;
 
 
 /**
@@ -190,7 +189,7 @@ const finalResult = routerResult.pipe(branch);
 
 const queryLengthCheck = (input: QueryInput): boolean => {
     const length = input.query.trim().length;
-    return length < TOO_SHORT_THRESHOLD || length > TOO_LONG_THRESHOLD;
+    return length > TOO_LONG_THRESHOLD;
 };
 
 /**
