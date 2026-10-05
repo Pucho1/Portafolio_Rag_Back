@@ -13,10 +13,10 @@ import { langFuseCallBack, shutdownTracing } from "../src/observability/langfuse
 type CaseInput    = { query: string };
 type CaseMetadata = { caseId: string; tipo: string; criterio: string };
 
-type LlmChainOutcome = { outcome: ChainOutcome };
+type ExpectedResult = { outcome: ChainOutcome };
 
-type Task = ExperimentTask<CaseInput, LlmChainOutcome, CaseMetadata>;
-type Eval = Evaluator<CaseInput, LlmChainOutcome, CaseMetadata>;
+type Task = ExperimentTask<CaseInput, ExpectedResult, CaseMetadata>;
+type Eval = Evaluator<CaseInput, ExpectedResult, CaseMetadata>;
 
 
 type CaseDataType = {
@@ -27,7 +27,7 @@ type CaseDataType = {
   estado_ultima_evaluacion: string;
   riesgo_si_falla: string;
   nota_tecnica?: string;
-  resultado_esperado: LlmChainOutcome;
+  resultado_esperado: ExpectedResult;
 };
 
 type GenerationEvalDataset = {
@@ -91,7 +91,7 @@ const evaluator: Eval = async ({ output, metadata, input }) => {
 
 
 /**
- * Evaluador para casos deterministas, que solo cumplen el criterio si la respuesta contiene el criterio y no hay contexto adicional.
+ * Evaluador para comparaciones determinísticas de la salida del LLM con el resultado esperado.
  * @param param0 
  * @returns Devuelve un objeto con el nombre del evaluador, el valor (1 o 0) y un comentario con la respuesta generada.
  */
