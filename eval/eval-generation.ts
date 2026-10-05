@@ -103,11 +103,6 @@ const deterministicEvaluator: Eval = async ({ output, expectedOutput }) => {
 
   const cumpleCriterio = outcomeOk && contextOk;
 
-  console.log(`\nEvaluando caso determinístico: "${output.question}"`);
-  console.log(`Resultado esperado: ${JSON.stringify(expectedOutput, null, 2)}`);
-  console.log(`Resultado obtenido: ${JSON.stringify(output, null, 2)}`);
-  console.log(`Cumple criterio determinístico: ${cumpleCriterio}`);
-
   return {
     name: "cumple_criterio_deterministico",
     value: cumpleCriterio ? 1 : 0,
