@@ -51,6 +51,19 @@
       "riesgo_si_falla": "Bajo - coste innecesario de una llamada al router para una entrada sin contenido.",
       "resultado_esperado": { "outcome": "invalid_input" },
       "nota_tecnica": "Solo espacios, salto de línea y tabulador. Comprueba que la validación aplica trim() antes de medir. En Langfuse no debe aparecer ninguna llamada a ChatOpenAI."
+    },
+    {
+      "id": "g6_limite_exacto_600",
+      "query": "Hola, trabajo como responsable técnico en una empresa de software y estoy preparando una entrevista para un puesto de desarrollador frontend senior. Antes de la llamada quiero entender bien la trayectoria profesional de Miguel: en qué empresas ha trabajado, durante cuánto tiempo estuvo en cada una y qué tecnologías utilizaba en esos proyectos. Me interesa especialmente su experiencia con React y Angular en clientes grandes, como bancos o medios de comunicación, y si en alguno de esos proyectos tuvo responsabilidades de liderazgo técnico o de coordinación de un equipo. Muchas gracias de verdad.",
+      "tipo": "limite_deterministico",
+      "criterio_exito": "Una pregunta de exactamente 600 caracteres (el máximo permitido) NO debe rechazarse por longitud. Debe pasar al router y, al ser una pregunta legítima sobre el perfil, responderse con contexto recuperado.",
+      "estado_ultima_evaluacion": "PENDIENTE",
+      "riesgo_si_falla": "Medio - un error off-by-one en el límite rechazaría preguntas legítimas largas, justo las de recruiters que dan contexto.",
+      "nota_tecnica": "Prueba de valor límite (boundary value): exactamente 600 caracteres tras trim(). Forma par mínimo con g7, que tiene 601 y solo cambia '¡' y '!' al final.",
+      "resultado_esperado": {
+        "outcome": "answered"
+      }
     }
+
   ]
 }
