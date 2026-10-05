@@ -5,20 +5,19 @@ import { execSync } from "node:child_process";
 import { LangfuseClient, type Evaluator, type ExperimentTask } from "@langfuse/client";
 
 import { runChain }         from "../src/chain/chain";
-import type { ChainResult } from "../src/chain/chain";
+import type { ChainOutcome, ChainResult } from "../src/chain/chain";
 import { judgeCriteria }    from "../src/evaluación/judge/judge";
 import { langFuseCallBack, shutdownTracing } from "../src/observability/langfuse";
 
-type ExperimentInput = {
-  query: string;
-  criterio: string;
-};
 
+type CaseInput    = { query: string };
+type CaseMetadata = { caseId: string; tipo: string; criterio: string };
 
-type EvaluatorValues = {
-  input: ExperimentInput;
-  output: ChainResult;
-};
+type LlmChainOutcome = { outcome: ChainOutcome };
+
+type Task = ExperimentTask<CaseInput, LlmChainOutcome, CaseMetadata>;
+type Eval = Evaluator<CaseInput, LlmChainOutcome, CaseMetadata>;
+
 
 type CaseDataType = {
   id: string;
@@ -28,6 +27,7 @@ type CaseDataType = {
   estado_ultima_evaluacion: string;
   riesgo_si_falla: string;
   nota_tecnica?: string;
+  resultado_esperado: LlmChainOutcome;
 };
 
 type GenerationEvalDataset = {
@@ -37,62 +37,100 @@ type GenerationEvalDataset = {
   casos: CaseDataType[];
 };
 
-
-function isExperimentInput(value: unknown): value is ExperimentInput {
-  return typeof value === "object"
-    && value !== null
-    && "query" in value
-    && typeof value.query === "string"
-    && "criterio" in value
-    && typeof value.criterio === "string";
-}
-
-
-
 // Initialize client
 const langfuse = new LangfuseClient();
 
 
-// Define your task function
-const myTask: ExperimentTask<ExperimentInput, ChainResult> = async (item) => {
-  if (!isExperimentInput(item.input)) {
-    throw new TypeError("El item del experimento debe incluir query y criterio.");
+/**
+ *  Ejecuta la consulta del usuario a través de la cadena de procesamiento y devuelve el resultado.
+ *  @param query Consulta escrita por el usuario.
+ *  @param config Configuración de ejecución de LangChain.
+ *  @returns El resultado final con la pregunta, el contexto y la respuesta generada.
+ */
+const myTask: Task = async ({input }) => {
+  if (!input || typeof input !== "object" ||
+      !("query" in input) ||
+      typeof input.query !== "string") 
+  {
+    throw new TypeError("El item del experimento debe incluir query.");
   }
 
   const handler = langFuseCallBack("eval-script", "eval-user");
 
-  const response = await runChain(item.input.query, { callbacks: [handler] });
+  const response = await runChain(input.query, { callbacks: [handler] });
 
   return response;
 };
 
-const evaluator: Evaluator<ExperimentInput, ChainResult> = async ({ input, output }: EvaluatorValues) => {
+/**
+ * Evaluador para casos que no son deterministas
+ * @param param0 
+ * @returns Devuelve un objeto con el nombre del evaluador, el valor (1 o 0) y un comentario con los fragmentos problemáticos.
+ */
+const evaluator: Eval = async ({ output, metadata, input }) => {
+
+  if (!metadata || metadata?.tipo === "limite_deterministico") return [];
+
+  const result = output as ChainResult;
 
   const juicio = await judgeCriteria(
-    output.context,
-    output.answer,
-    input.criterio
+    result.context,
+    result.answer,
+    metadata.criterio
   );
+
+  console.log(`\nEvaluando caso: "${input.query}" con criterio: "${metadata.criterio}"`);
+  console.log(`Resultado del juicio: ${JSON.stringify(juicio, null, 2)}`);
 
   return {
     name: "cumple_criterio",
-    value: juicio.cumpleCriterio ? 1 : 0,
+    value:   juicio.cumpleCriterio ? 1 : 0,
     comment: juicio.fragmentosProblematicos.join("\n"),
   };
 }; 
 
-const getexperimentData = ( dataset: GenerationEvalDataset ) => {
+
+/**
+ * Evaluador para casos deterministas, que solo cumplen el criterio si la respuesta contiene el criterio y no hay contexto adicional.
+ * @param param0 
+ * @returns Devuelve un objeto con el nombre del evaluador, el valor (1 o 0) y un comentario con la respuesta generada.
+ */
+const deterministicEvaluator: Eval = async ({ output, expectedOutput }) => {
+  if (!expectedOutput?.outcome) return [];
+
+
+  const cumpleCriterio = output.outcome === expectedOutput?.outcome && output.context.trim() === "";
+
+  return {
+    name: "cumple_criterio_deterministico",
+    value: cumpleCriterio ? 1 : 0,
+    comment: output.answer,
+  };
+}
+
+/**
+ * Obtiene los datos de entrada para el experimento a partir del dataset de evaluación.
+ * @param dataset 
+ * @returns Un array de objetos con la consulta, el criterio de éxito y los metadatos del caso.
+ */
+const getexperimentData = ( dataset: GenerationEvalDataset )  => {
     const experimentData = dataset.casos.map((caso) => ({
-        input: {
-            query: caso.query,
-            criterio: caso.criterio_exito,
+        input: { query: caso.query },
+        expectedOutput: caso.resultado_esperado,
+        metadata: { 
+          caseId:   caso.id,
+          tipo:     caso.tipo,
+          criterio: caso.criterio_exito,
         },
     }));
 
     return experimentData;
 };
 
-
+/**
+ *  Obtiene la versión actual del repositorio Git para usarla como nombre de ejecución en Langfuse.
+ *  @returns La versión de Git en formato string, o "unknown" si no se puede determinar.
+ */
 const getGitVersion = (): string => {
   try {
     return execSync("git describe --always --dirty", {
@@ -119,11 +157,12 @@ async function main() {
         description: "Testing Rag For gigital twin",
         data: experimentData,
         task: myTask,
-        evaluators: [evaluator],
+        evaluators: [ evaluator , deterministicEvaluator ],
         runName: getGitVersion()
     })
 
     console.log(await result.format());
+    // console.log( JSON.stringify( result, null, 2 ) );
 
   } finally { // da igual que pase quiero los tracer 
 
