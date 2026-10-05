@@ -2,7 +2,7 @@ import { ChatOpenAI }         from "@langchain/openai";
 import { RunnableConfig }     from "@langchain/core/runnables";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
-import { retrievalRouteSchema, RetrievalRoute, RoutedInput } from "./schema";
+import {  RetrievalRoute, RoutedInput, buildRouteSchema } from "./schema";
 import { DomainCatalog, loadDomainCatalog }                  from '../domain/domainCatalog ';
 
 import "dotenv/config";
@@ -21,9 +21,8 @@ const model = new ChatOpenAI({
 export async function routeQuery( query: string, config?: RunnableConfig): Promise<RetrievalRoute> {
 
 	const domainCatalog = await loadDomainCatalog();
-
   const structuredModel = model.withStructuredOutput(
-    retrievalRouteSchema
+    buildRouteSchema(domainCatalog)
   );
 
   const HUMAN_TEMPLATE = `<question>{question}</question>`;
