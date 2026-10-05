@@ -25,10 +25,13 @@ initApp().catch((error) => {
   process.exit(1);
 });
 
+export type ChainOutcome = "answered" | "rejected" | "invalid_input";
+
 export interface ChainResult {
     question: string;
     context: string;
     answer: string;
+    outcome: ChainOutcome;
 }
 
 
@@ -107,6 +110,8 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
 });
 
 
+
+
 /**
  * Formatea el resultado final del flujo de respuesta en un objeto de salida estándar.
  * @param input Entrada con la consulta, el contexto y la respuesta del modelo.
@@ -116,10 +121,16 @@ const inDomain = retrivelResult
     .pipe(getAnswer)
     .pipe(RunnableLambda.from((input: RouterOutput & { context: string; answer: string }): ChainResult => ({
         question: input.query,
-        context: input.context,
-        answer: input.answer,
+        context:  input.context,
+        answer:   input.answer,
+        outcome:  "answered"
     }))
 ).withConfig({ runName: "format-response" });
+
+const TOO_LONG_THRESHOLD = 600;
+const TOO_SHORT_THRESHOLD = 10;
+const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
+const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener entre ${TOO_SHORT_THRESHOLD} y ${TOO_LONG_THRESHOLD} caracteres.`;
 
 
 /**
@@ -130,7 +141,8 @@ const inDomain = retrivelResult
 const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     question: input.query,
     context: "",
-    answer: "Solo puedo responder preguntas sobre mi perfil profesional.",
+    answer: REJECTION_MESSAGE,
+    outcome: "rejected"
 }));
 
 
@@ -142,8 +154,22 @@ const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
 const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     question: input.query,
     context: "",
-    answer: "No puedo ayudarte con eso.",
+    answer: REJECTION_MESSAGE,
+    outcome: "rejected"
 }));
+
+
+/**
+ * Devuelve un mensaje de rechazo cuando la consulta excede el límite de longitud permitido.
+ * @param input Consulta original del usuario.
+ * @returns Un objeto de respuesta indicando que la consulta es demasiado larga para procesarla.
+ */
+const tooLongRejection  = RunnableLambda.from((input: RouterOutput): ChainResult => ({
+    question: input.query,
+    context: "",
+    answer: REJECTION_LARGE_MESSAGE,
+    outcome: "invalid_input"
+})).withConfig({ runName: "length-rejection" });
 
 /**
  * Selecciona la rama correcta del flujo según la intención detectada en la consulta.
@@ -160,6 +186,24 @@ const branch = RunnableBranch.from<RouterOutput, ChainResult>([
 const finalResult = routerResult.pipe(branch);
 
 
+
+
+const queryLengthCheck = (input: QueryInput): boolean => {
+    const length = input.query.trim().length;
+    return length < TOO_SHORT_THRESHOLD || length > TOO_LONG_THRESHOLD;
+};
+
+/**
+ * Verifica si la consulta excede el umbral permitido.
+ * @param input Consulta original del usuario.
+ * @returns El resultado final con la pregunta, el contexto y la respuesta generada.
+ */
+const guardedChain = RunnableBranch.from<QueryInput, ChainResult>([
+    [ (input) => queryLengthCheck(input), tooLongRejection, ],
+    finalResult
+]);
+
+
 /**
  * Ejecuta la cadena completa de procesamiento para una pregunta dada.
  * @param query Consulta escrita por el usuario.
@@ -167,6 +211,6 @@ const finalResult = routerResult.pipe(branch);
  * @returns El resultado final con la pregunta, el contexto y la respuesta generada.
  */
 export async function runChain(query: string, config: RunnableConfig) {
-    return finalResult.invoke({ query }, config);
+    return guardedChain.invoke({ query }, config);
 };
 
