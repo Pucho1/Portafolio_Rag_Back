@@ -98,8 +98,15 @@ const evaluator: Eval = async ({ output, metadata, input }) => {
 const deterministicEvaluator: Eval = async ({ output, expectedOutput }) => {
   if (!expectedOutput?.outcome) return [];
 
+  const outcomeOk = output.outcome === expectedOutput.outcome;
+  const contextOk = output.outcome === "answered" ? output.context.trim().length > 0 : output.context.trim() === "";
 
-  const cumpleCriterio = output.outcome === expectedOutput?.outcome && output.outcome === "answered" ? output.context.trim().length > 0 : output.context.trim() === "";
+  const cumpleCriterio = outcomeOk && contextOk;
+
+  console.log(`\nEvaluando caso determinístico: "${output.question}"`);
+  console.log(`Resultado esperado: ${JSON.stringify(expectedOutput, null, 2)}`);
+  console.log(`Resultado obtenido: ${JSON.stringify(output, null, 2)}`);
+  console.log(`Cumple criterio determinístico: ${cumpleCriterio}`);
 
   return {
     name: "cumple_criterio_deterministico",
