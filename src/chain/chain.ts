@@ -44,7 +44,7 @@ export interface ChainResult {
 const routerResult = RunnableLambda.from(
     async (input: QueryInput, config?: RunnableConfig): Promise<RouterOutput> => ({
         ...input,
-        routerResult: await getRouterResults(input.query, config), // aun devulve el objeto antiguo no son del mismo tipo 
+        routerResult: await getRouterResults(input.query, config),
     })
 ).withConfig({ runName: "router" });
 
@@ -127,6 +127,7 @@ const inDomain = retrivelResult
     }))
 ).withConfig({ runName: "format-response" });
 
+const TOO_SHORT_THRESHOLD = 0;
 const TOO_LONG_THRESHOLD = 600;
 const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
 const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener menos de ${TOO_LONG_THRESHOLD} caracteres.`;
@@ -163,7 +164,7 @@ const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResu
  * @param input Consulta original del usuario.
  * @returns Un objeto de respuesta indicando que la consulta es demasiado larga para procesarla.
  */
-const tooLongRejection  = RunnableLambda.from((input: RouterOutput): ChainResult => ({
+const tooLongRejection  = RunnableLambda.from((input: QueryInput): ChainResult => ({
     question: input.query,
     context: "",
     answer: REJECTION_LARGE_MESSAGE,
@@ -184,12 +185,9 @@ const branch = RunnableBranch.from<RouterOutput, ChainResult>([
 
 const finalResult = routerResult.pipe(branch);
 
-
-
-
 const queryLengthCheck = (input: QueryInput): boolean => {
     const length = input.query.trim().length;
-    return length > TOO_LONG_THRESHOLD;
+    return TOO_SHORT_THRESHOLD < length && length < TOO_LONG_THRESHOLD;
 };
 
 /**
