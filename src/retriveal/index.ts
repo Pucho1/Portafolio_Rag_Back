@@ -66,11 +66,5 @@ export async function getRetrieverResult(input: RouterOutput, config?: RunnableC
 
   const finalResponsefromParents = await retrievalChain.invoke( input , config);
 
-
-  console.log("\n--- CONTEXTO FINAL (post-PDR) ---");
-  finalResponsefromParents.forEach((doc, i) => {
-    console.log(`${i + 1}. [${doc.metadata.category}] ${doc.metadata.parentTitle ?? doc.metadata.headers} (${doc.pageContent.length} chars)`);
-  });
-
   return finalResponsefromParents;
 };

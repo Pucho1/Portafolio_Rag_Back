@@ -72,9 +72,6 @@ const structuredJudge = judgeModel.withStructuredOutput(judgeCriteriaSchema);
  * @returns 
  */
 export async function judgeCriteria(  context: string,  answer: string, criterio: string): Promise<z.infer<typeof judgeCriteriaSchema>> {
-  
-  console.log(" estoy analizando los criterios ----->: ", `${criterio}`)
-  
   const formattedPrompt = await judgePrompt.invoke({ context, answer, criterio });
   return structuredJudge.invoke(formattedPrompt);
 }
