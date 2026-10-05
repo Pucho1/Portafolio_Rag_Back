@@ -99,7 +99,7 @@ const deterministicEvaluator: Eval = async ({ output, expectedOutput }) => {
   if (!expectedOutput?.outcome) return [];
 
 
-  const cumpleCriterio = output.outcome === expectedOutput?.outcome && output.context.trim() === "";
+  const cumpleCriterio = output.outcome === expectedOutput?.outcome && output.outcome === "answered" ? output.context.trim().length > 0 : output.context.trim() === "";
 
   return {
     name: "cumple_criterio_deterministico",

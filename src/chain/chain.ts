@@ -185,9 +185,9 @@ const branch = RunnableBranch.from<RouterOutput, ChainResult>([
 
 const finalResult = routerResult.pipe(branch);
 
-const queryLengthCheck = (input: QueryInput): boolean => {
+const isQueryLengthValid = (input: QueryInput): boolean => {
     const length = input.query.trim().length;
-    return TOO_SHORT_THRESHOLD < length && length < TOO_LONG_THRESHOLD;
+    return TOO_SHORT_THRESHOLD < length && length <= TOO_LONG_THRESHOLD;
 };
 
 /**
@@ -196,7 +196,7 @@ const queryLengthCheck = (input: QueryInput): boolean => {
  * @returns El resultado final con la pregunta, el contexto y la respuesta generada.
  */
 const guardedChain = RunnableBranch.from<QueryInput, ChainResult>([
-    [ (input) => queryLengthCheck(input), tooLongRejection, ],
+    [ (input) => !isQueryLengthValid(input), tooLongRejection, ],
     finalResult
 ]);
 
