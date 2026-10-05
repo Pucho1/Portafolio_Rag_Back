@@ -8,10 +8,10 @@ import { Document }             from "@langchain/core/documents";
 import { ChatPromptTemplate }   from "@langchain/core/prompts";
 import { StringOutputParser }   from "@langchain/core/output_parsers";
 
-import { getRetrieverResult } from "../retriveal";
-import { initApp }            from "../bootstrap";
+import { getRetrieverResult }            from "../retriveal";
+import { initApp }                       from "../bootstrap";
 import type { QueryInput, RouterOutput } from "../routing/schema";
-import { getRouterResults } from "../routing/router";
+import { getRouterResults }              from "../routing/router";
 
 
 const model = new ChatOpenAI({
@@ -109,9 +109,6 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
     },
 });
 
-
-
-
 /**
  * Formatea el resultado final del flujo de respuesta en un objeto de salida estándar.
  * @param input Entrada con la consulta, el contexto y la respuesta del modelo.
@@ -130,7 +127,7 @@ const inDomain = retrivelResult
 const TOO_SHORT_THRESHOLD = 0;
 const TOO_LONG_THRESHOLD = 600;
 const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
-const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener menos de ${TOO_LONG_THRESHOLD} caracteres.`;
+const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
 
 
 /**
