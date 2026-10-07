@@ -7,10 +7,13 @@ import { DomainCatalog, loadDomainCatalog }                  from '../domain/dom
 
 import "dotenv/config";
 
+const ROUTER_MAX_TOKENS = 300
+
 
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
+  maxTokens: ROUTER_MAX_TOKENS,
 });
 
 /**
