@@ -13,10 +13,11 @@ import { initApp }                       from "../bootstrap";
 import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults }              from "../routing/router";
 
-
+const GENERATION_MAX_TOKENS = 800
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
+  maxTokens: GENERATION_MAX_TOKENS,
 });
 
 
