@@ -14,10 +14,15 @@ import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults }              from "../routing/router";
 
 const GENERATION_MAX_TOKENS = 800
+const GENERATION_TIMEOUT_MS = 15000
+const GENERATION_MAX_RETRIES = 1
+
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
   maxTokens: GENERATION_MAX_TOKENS,
+  timeout: GENERATION_TIMEOUT_MS,
+  maxRetries: GENERATION_MAX_RETRIES,
 });
 
 
