@@ -37,7 +37,7 @@ initApp().catch((error) => {
   process.exit(1);
 });
 
-export type ChainOutcome = "answered" | "rejected" | "invalid_input" | "router_error" | "error";
+export type ChainOutcome = "answered" | "rejected" | "invalid_input" | "error";
 
 export interface ChainResult {
     question: string;
@@ -58,7 +58,14 @@ const routerResult = RunnableLambda.from(
         ...input,
         routerResult: await getRouterResults(input.query, config),
     })
-).withConfig({ runName: "router" });
+)
+.withConfig({ runName: "router" })
+.withFallbacks([
+    RunnableLambda.from((input: QueryInput): RouterOutput => ({
+        ...input,
+        routerResult: { decision: { queryIntention: "router_error" } }
+    })).withConfig({ runName: "router-fallback" })
+]);
 
 /**
  * Recupera los documentos relevantes para la consulta y los convierte en un contexto textual.
@@ -119,7 +126,7 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
             context: input.context,
         }, config);
     },
-});
+}).withConfig({ runName: "get-answer" });
 
 /**
  * Formatea el resultado final del flujo de respuesta en un objeto de salida estándar.
@@ -148,7 +155,7 @@ const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     context: "",
     answer: REJECTION_MESSAGE,
     outcome: "rejected"
-}));
+})).withConfig({ runName: "out-of-domain" });
 
 
 /**
@@ -161,14 +168,14 @@ const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResu
     context: "",
     answer: REJECTION_MESSAGE,
     outcome: "rejected"
-}));
+})).withConfig({ runName: "manipulation-attempt" });
 
-const routerError = RunnableLambda.from((input: RouterOutput): ChainResult => ({
+const unexpectedState = RunnableLambda.from((input: RouterOutput): ChainResult => ({
     question: input.query,
     context: "",
     answer: ERROR_MESSAGE,
     outcome: "error",
-}))
+})).withConfig({ runName: "unexpected-state" });
 
 
 /**
@@ -193,11 +200,16 @@ const branch = RunnableBranch.from<RouterOutput, ChainResult>([
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "in_domain",  inDomain, ],
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
-    routerError
+    unexpectedState
 ]);
 
 const finalResult = routerResult.pipe(branch);
 
+/**
+ *  Obtiene la respuesta final del flujo de procesamiento para una consulta dada, incluyendo enrutamiento, recuperación y generación de respuesta.
+ * @param input 
+ * @returns  Un objeto con la pregunta, el contexto y la respuesta final generada por el modelo.
+ */
 const isQueryLengthValid = (input: QueryInput): boolean => {
     const length = input.query.trim().length;
     return TOO_SHORT_THRESHOLD < length && length <= TOO_LONG_THRESHOLD;
@@ -211,7 +223,7 @@ const isQueryLengthValid = (input: QueryInput): boolean => {
 const guardedChain = RunnableBranch.from<QueryInput, ChainResult>([
     [ (input) => isQueryLengthValid(input), finalResult, ],
     tooLongRejection
-]);
+]).withConfig({ runName: "guarded-chain" });
 
 
 /**

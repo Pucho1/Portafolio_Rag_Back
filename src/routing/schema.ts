@@ -35,11 +35,12 @@ export function buildRouteSchema(catalog: DomainCatalog) {
   });
 }
 
+type RouterFailure = { decision: { queryIntention: "router_error" } }
 
 
-export type RetrievalRoute = z.infer<ReturnType<typeof buildRouteSchema>>;
-export type RouteDecision = RetrievalRoute["decision"];
+export type RetrievalRoute = z.infer<ReturnType<typeof buildRouteSchema>>; // lee el esquema Zod y genera el tipo TS equivalente automáticamente
+export type RouteDecision = RetrievalRoute["decision"]; // obtengo directamente los valores de la propiedad decision del tipo RetrievalRoute
 
 export type QueryInput   = { query: string };
-export type RoutedInput  = {decision: RouteDecision };
-export type RouterOutput = QueryInput & { routerResult: RoutedInput };
+export type RouterResult  = {decision: RouteDecision };
+export type RouterOutput = QueryInput & { routerResult: RouterResult | RouterFailure };
