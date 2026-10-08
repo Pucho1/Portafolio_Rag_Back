@@ -2,14 +2,14 @@ import { ChatOpenAI }         from "@langchain/openai";
 import { RunnableConfig }     from "@langchain/core/runnables";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
-import {  RetrievalRoute, RoutedInput, buildRouteSchema } from "./schema";
+import {  RetrievalRoute, RouterResult, buildRouteSchema } from "./schema";
 import { DomainCatalog, loadDomainCatalog }                  from '../domain/domainCatalog ';
 
 import "dotenv/config";
 
-const ROUTER_MAX_TOKENS = 300
-const ROUTER_TIMEOUT_MS = 8000;
-const ROUTER_MAX_RETRIES = 0;
+const ROUTER_MAX_TOKENS   = 5;
+const ROUTER_TIMEOUT_MS   = 8000;
+const ROUTER_MAX_RETRIES  = 0;
 
 
 const model = new ChatOpenAI({
@@ -136,7 +136,7 @@ async function getImportantDomainDocs(query: string, config?: RunnableConfig): P
  * @param query 
  * @returns 
  */
-export async function getRouterResults(query: string, config?: RunnableConfig): Promise<RoutedInput> {
+export async function getRouterResults(query: string, config?: RunnableConfig): Promise<RouterResult> {
   const docRoute     = await getImportantDomainDocs(query, config);
 	const { decision } = await validateRoute(docRoute);
 
