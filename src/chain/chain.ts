@@ -17,6 +17,12 @@ const GENERATION_MAX_TOKENS = 800
 const GENERATION_TIMEOUT_MS = 15000
 const GENERATION_MAX_RETRIES = 1
 
+const TOO_SHORT_THRESHOLD = 0;
+const TOO_LONG_THRESHOLD = 600;
+const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
+const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
+const ERROR_MESSAGE = "No he podido procesar tu pregunta ahora mismo, inténtalo de nuevo en unos segundos"
+
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
@@ -31,7 +37,7 @@ initApp().catch((error) => {
   process.exit(1);
 });
 
-export type ChainOutcome = "answered" | "rejected" | "invalid_input";
+export type ChainOutcome = "answered" | "rejected" | "invalid_input" | "router_error" | "error";
 
 export interface ChainResult {
     question: string;
@@ -130,10 +136,6 @@ const inDomain = retrivelResult
     }))
 ).withConfig({ runName: "format-response" });
 
-const TOO_SHORT_THRESHOLD = 0;
-const TOO_LONG_THRESHOLD = 600;
-const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
-const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
 
 
 /**
@@ -161,6 +163,13 @@ const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResu
     outcome: "rejected"
 }));
 
+const routerError = RunnableLambda.from((input: RouterOutput): ChainResult => ({
+    question: input.query,
+    context: "",
+    answer: ERROR_MESSAGE,
+    outcome: "error",
+}))
+
 
 /**
  * Devuelve un mensaje de rechazo cuando la consulta excede el límite de longitud permitido.
@@ -181,9 +190,10 @@ const tooLongRejection  = RunnableLambda.from((input: QueryInput): ChainResult =
  */
 const branch = RunnableBranch.from<RouterOutput, ChainResult>([
 
+    [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "in_domain",  inDomain, ],
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "out_of_domain",  outOfDomain, ],
     [ (input: RouterOutput) => input.routerResult.decision.queryIntention === "manipulation_attempt", manipulationAttempt, ],
-    inDomain
+    routerError
 ]);
 
 const finalResult = routerResult.pipe(branch);
@@ -199,8 +209,8 @@ const isQueryLengthValid = (input: QueryInput): boolean => {
  * @returns El resultado final con la pregunta, el contexto y la respuesta generada.
  */
 const guardedChain = RunnableBranch.from<QueryInput, ChainResult>([
-    [ (input) => !isQueryLengthValid(input), tooLongRejection, ],
-    finalResult
+    [ (input) => isQueryLengthValid(input), finalResult, ],
+    tooLongRejection
 ]);
 
 
