@@ -8,12 +8,16 @@ import { DomainCatalog, loadDomainCatalog }                  from '../domain/dom
 import "dotenv/config";
 
 const ROUTER_MAX_TOKENS = 300
+const ROUTER_TIMEOUT_MS = 8000;
+const ROUTER_MAX_RETRIES = 0;
 
 
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
   maxTokens: ROUTER_MAX_TOKENS,
+  timeout: ROUTER_TIMEOUT_MS,
+  maxRetries: ROUTER_MAX_RETRIES,
 });
 
 /**
