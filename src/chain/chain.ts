@@ -14,7 +14,7 @@ import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults }              from "../routing/router";
 
 const GENERATION_MAX_TOKENS = 800
-const GENERATION_TIMEOUT_MS = 15000
+const GENERATION_TIMEOUT_MS = 1
 const GENERATION_MAX_RETRIES = 1
 
 const TOO_SHORT_THRESHOLD = 0;
@@ -156,9 +156,9 @@ const inDomain = retrivelResult
         answer:   input.answer,
         outcome:  "answered"
     }))
-).withConfig({ runName: "format-response" })
+).withConfig({ runName: "in-domain" })
 .withFallbacks([
-    staticResponse(ERROR_MESSAGE, "error", "inDomain-response-fallback")
+    staticResponse(ERROR_MESSAGE, "error", "in-domain-response-fallback")
 ]);
 
 
