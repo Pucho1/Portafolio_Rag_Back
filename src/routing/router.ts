@@ -7,7 +7,7 @@ import { DomainCatalog, loadDomainCatalog }                  from '../domain/dom
 
 import "dotenv/config";
 
-const ROUTER_MAX_TOKENS   = 5;
+const ROUTER_MAX_TOKENS   = 300;
 const ROUTER_TIMEOUT_MS   = 8000;
 const ROUTER_MAX_RETRIES  = 0;
 
