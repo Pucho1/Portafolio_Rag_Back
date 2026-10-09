@@ -129,6 +129,21 @@ const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string },
 }).withConfig({ runName: "get-answer" });
 
 /**
+ * Crea una rama terminal que devuelve un ChainResult fijo sin contexto.
+ * @param answer Mensaje que se devolverá al usuario.
+ * @param outcome Resultado de la cadena.
+ * @param runName Nombre de la ejecución para trazas.
+ * @returns Un runnable que, dada cualquier entrada con `query`, devuelve la respuesta fija.
+ */
+const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) =>
+    RunnableLambda.from((input: Pick<QueryInput, "query">): ChainResult => ({
+        question: input.query,
+        context: "",
+        answer,
+        outcome,
+    })).withConfig({ runName });
+
+/**
  * Formatea el resultado final del flujo de respuesta en un objeto de salida estándar.
  * @param input Entrada con la consulta, el contexto y la respuesta del modelo.
  * @returns Un objeto con la pregunta, el contexto y la respuesta final.
@@ -141,7 +156,10 @@ const inDomain = retrivelResult
         answer:   input.answer,
         outcome:  "answered"
     }))
-).withConfig({ runName: "format-response" });
+).withConfig({ runName: "format-response" })
+.withFallbacks([
+    staticResponse(ERROR_MESSAGE, "error", "inDomain-response-fallback")
+]);
 
 
 
@@ -150,12 +168,7 @@ const inDomain = retrivelResult
  * @param input Resultado del router con la intención detectada de la consulta.
  * @returns Un objeto de respuesta indicando que solo puede responder sobre el perfil profesional.
  */
-const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
-    question: input.query,
-    context: "",
-    answer: REJECTION_MESSAGE,
-    outcome: "rejected"
-})).withConfig({ runName: "out-of-domain" });
+const outOfDomain = staticResponse(REJECTION_MESSAGE, "rejected", "out-of-domain");
 
 
 /**
@@ -163,19 +176,14 @@ const outOfDomain = RunnableLambda.from((input: RouterOutput): ChainResult => ({
  * @param input Resultado del router con la intención detectada de manipulación.
  * @returns Un objeto de respuesta rechazando la solicitud.
  */
-const manipulationAttempt = RunnableLambda.from((input: RouterOutput): ChainResult => ({
-    question: input.query,
-    context: "",
-    answer: REJECTION_MESSAGE,
-    outcome: "rejected"
-})).withConfig({ runName: "manipulation-attempt" });
+const manipulationAttempt = staticResponse(REJECTION_MESSAGE, "rejected", "manipulation-attempt");
 
-const unexpectedState = RunnableLambda.from((input: RouterOutput): ChainResult => ({
-    question: input.query,
-    context: "",
-    answer: ERROR_MESSAGE,
-    outcome: "error",
-})).withConfig({ runName: "unexpected-state" });
+/**
+ * Devuelve un mensaje de error cuando el router no devuelve una intención reconocida (p. ej. "router_error").
+ * @param input Resultado del router con una intención no contemplada.
+ * @returns Un objeto de respuesta indicando que no se ha podido procesar la consulta.
+ */
+const unexpectedState = staticResponse(ERROR_MESSAGE, "error", "unexpected-state");
 
 
 /**
@@ -183,12 +191,7 @@ const unexpectedState = RunnableLambda.from((input: RouterOutput): ChainResult =
  * @param input Consulta original del usuario.
  * @returns Un objeto de respuesta indicando que la consulta es demasiado larga para procesarla.
  */
-const tooLongRejection  = RunnableLambda.from((input: QueryInput): ChainResult => ({
-    question: input.query,
-    context: "",
-    answer: REJECTION_LARGE_MESSAGE,
-    outcome: "invalid_input"
-})).withConfig({ runName: "length-rejection" });
+const tooLongRejection = staticResponse(REJECTION_LARGE_MESSAGE, "invalid_input", "length-rejection");
 
 /**
  * Selecciona la rama correcta del flujo según la intención detectada en la consulta.
