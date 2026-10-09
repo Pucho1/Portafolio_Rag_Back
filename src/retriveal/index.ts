@@ -62,7 +62,7 @@ export async function getRetrieverResult(input: RouterOutput, config?: RunnableC
   const retrievalChain = hybridStep
     .pipe(rerankStep)
     .pipe(parentsStep)
-    .withConfig({ runName: "retrieval" });
+    .withConfig({ runName: "retrieval-pipeline" });
 
   const finalResponsefromParents = await retrievalChain.invoke( input , config);
 
