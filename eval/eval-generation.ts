@@ -55,7 +55,7 @@ const myTask: Task = async ({input }) => {
     throw new TypeError("El item del experimento debe incluir query.");
   }
 
-  const handler = langFuseCallBack("eval-script", "eval-user");
+  const handler = langFuseCallBack("eval-script", "eval-user", "rag-portafolio-eval");
 
   const response = await runChain(input.query, { callbacks: [handler] });
 
