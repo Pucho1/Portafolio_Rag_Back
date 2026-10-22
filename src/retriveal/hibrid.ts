@@ -2,9 +2,9 @@ import { BM25Retriever } 	      from "@langchain/community/retrievers/bm25";
 import { Document }             from "@langchain/core/documents";
 import { VectorStoreRetriever } from "@langchain/core/vectorstores";
 import { MemoryVectorStore }    from '@langchain/classic/vectorstores/memory';
+import { RunnableConfig }       from "@langchain/core/runnables";
 
 import { reciprocalRankFusion }   from "../helpers/reciprocarlRankFunctionCustom";
-import { RunnableConfig } from "@langchain/core/runnables";
 
 
  export type HybridResultsArgs = {
@@ -15,6 +15,14 @@ import { RunnableConfig } from "@langchain/core/runnables";
     config: RunnableConfig,
   }
 
+  /**
+  *  Filtra los documentos según las categorías y tipos de proyecto especificados.
+  *  @param categories Categorías para filtrar los documentos.
+  *  @param projectTypes Tipos de proyecto para filtrar los documentos.
+  *  @returns  True si el documento coincide con las categorías y tipos de proyecto especificados, false en caso contrario.
+  *  @remarks
+  *  Si no se especifican categorías o tipos de proyecto, se consideran todos los documentos como válidos.
+  */
 const getValues = (categories: string[], projectTypes: string[], doc: Document) => {
 
   const categoryMatches =
@@ -26,16 +34,24 @@ const getValues = (categories: string[], projectTypes: string[], doc: Document) 
   return categoryMatches && projectTypeMatches;
 };
 
+/**
+ * Combina los resultados de dos recuperadores (vectorial y BM25) utilizando la fusión de rango recíproco para obtener un conjunto de documentos híbrido.
+ * @param retrieverResult Resultado del recuperador vectorial.
+ * @param bm25Retriever Resultado del recuperador BM25.
+ * @param query Consulta de búsqueda.
+ * @param config Configuración para la invocación de los recuperadores.
+ * @returns Promise que resuelve en un array de documentos híbridos.
+ */
 async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retriever:  BM25Retriever,  query: string, config?: RunnableConfig): Promise<Document[]> {
 
-  const [vectorResults, bm25Results] = await Promise.all([
+  const [vectorResults, bm25Results] = await Promise.allSettled([
     retrieverResult.invoke(query, { ...config, runName: "vector-retriever" }),
     bm25Retriever.invoke(query, { ...config, runName: "bm25-retriever" }),
   ]);
 
   const hybridResults = reciprocalRankFusion(
-    vectorResults,
-    bm25Results,
+    vectorResults?.status === "fulfilled" ? vectorResults.value : [],
+    bm25Results?.status === "fulfilled" ? bm25Results.value : [],
   );
 
   return hybridResults;
@@ -43,12 +59,12 @@ async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retri
 
 
 /**
- * 
- * @param query 
- * @param categories 
- * @param projectTypes 
- * @param chunks 
- * @returns 
+ * Obtiene los resultados híbridos combinando los resultados de un recuperador vectorial y un recuperador BM25, filtrando los documentos según las categorías y tipos de proyecto especificados.
+ * @param query Consulta de búsqueda.
+ * @param categories Categorías para filtrar los documentos. 
+ * @param projectTypes Tipos de proyecto para filtrar los documentos.
+ * @param chunks Chunks de documentos.
+ * @returns Promise que resuelve en un array de documentos híbridos.
  */
 export async function getHibridResults(
   query: string,
