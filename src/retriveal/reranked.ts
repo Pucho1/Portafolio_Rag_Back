@@ -9,7 +9,7 @@ import "dotenv/config";
 
 export type RerankedDocs = {
   index: number;
-  relevanceScore: number
+  relevanceScore: number  | null;
 }
 
 type RerankInput = {
@@ -17,7 +17,11 @@ type RerankInput = {
   query: string;
 }
 
-const cohereClient = new CohereClient({ token:  process.env.COHERE_API_KEY, timeoutInSeconds: 2, maxRetries: 0 });
+const RERANK_TOP_N = 5; // Número de documentos a reordenar y devolver
+const COHERE_TIMEOUT_S = 2;
+const COHERE_MAX_RETRIES = 0;
+
+const cohereClient = new CohereClient({ token:  process.env.COHERE_API_KEY, timeoutInSeconds: COHERE_TIMEOUT_S, maxRetries: COHERE_MAX_RETRIES });
 const cohereRerank = new CohereRerank({
   client: cohereClient,
   model: "rerank-multilingual-v3.0",
@@ -27,8 +31,22 @@ const cohereRerank = new CohereRerank({
 // RunnableLambda para que al invocarlo con el config aparezca como hijo en la traza.
 const cohereRerankRunnable = RunnableLambda.from(
   ({ hybridResults, query }: RerankInput): Promise<RerankedDocs[]> =>
-    cohereRerank.rerank(hybridResults, query, { topN: 5 })
-).withConfig({ runName: "cohere-rerank" });
+    cohereRerank.rerank(hybridResults, query, { topN: RERANK_TOP_N })
+)
+.withConfig({ runName: "cohere-rerank" })
+.withFallbacks([
+  RunnableLambda.from(
+    ({ hybridResults }: RerankInput): RerankedDocs[] => {
+
+
+      const rerankedDocs = hybridResults.slice(0, RERANK_TOP_N).map((_doc, index) => ({
+        index,
+        relevanceScore: null,
+      }));
+      return rerankedDocs;
+    }
+  ).withConfig({ runName: "cohere-rerank-fallback" })
+]);
 
 //  ------COHERE RERANKER-------
 // Cohere Rerank es un modelo de reordenamiento de resultados de búsqueda que utiliza técnicas de aprendizaje profundo 
