@@ -1,12 +1,12 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import fs           from "node:fs/promises";
+import path         from "node:path";
 import { execSync } from "node:child_process";
 
 import { LangfuseClient, type Evaluator, type ExperimentTask } from "@langfuse/client";
 
-import { runChain }         from "../src/chain/chain";
+import { runChain }                       from "../src/chain/chain";
 import type { ChainOutcome, ChainResult } from "../src/chain/chain";
-import { judgeCriteria }    from "../src/evaluación/judge/judge";
+import { judgeCriteria }                     from "../src/evaluación/judge/judge";
 import { langFuseCallBack, shutdownTracing } from "../src/observability/langfuse";
 
 

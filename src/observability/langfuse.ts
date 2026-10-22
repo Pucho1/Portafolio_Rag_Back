@@ -43,7 +43,13 @@ class NamedCallbackHandler extends CallbackHandler {
     }
 }
 
-// función fábrica que crea una instancia nueva por invocación
+/**
+ * Crea una instancia de CallbackHandler con un nombre de traza específico para agrupar los spans en langfuse.
+ * @param sessionId Nombre de la sesión de evaluación, que se usará para agrupar los spans en langfuse.
+ * @param userId    Nombre del usuario que ejecuta la evaluación, que se usará para agrupar los spans en langfuse.
+ * @param traceName Nombre de la traza que se usará en langfuse.
+ * @returns 
+ */
 export const langFuseCallBack = (sessionId: string, userId: string, traceName = "rag-portafolio") => {
     return new NamedCallbackHandler(traceName, { sessionId, userId, tags: [APP_TAG] });
 }
