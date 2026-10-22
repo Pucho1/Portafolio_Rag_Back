@@ -2,9 +2,9 @@ import { BM25Retriever } 	      from "@langchain/community/retrievers/bm25";
 import { Document }             from "@langchain/core/documents";
 import { VectorStoreRetriever } from "@langchain/core/vectorstores";
 import { MemoryVectorStore }    from '@langchain/classic/vectorstores/memory';
-import { RunnableConfig }       from "@langchain/core/runnables";
 
 import { reciprocalRankFusion }   from "../helpers/reciprocarlRankFunctionCustom";
+import { RunnableConfig } from "@langchain/core/runnables";
 
 
  export type HybridResultsArgs = {
@@ -19,6 +19,7 @@ import { reciprocalRankFusion }   from "../helpers/reciprocarlRankFunctionCustom
   *  Filtra los documentos según las categorías y tipos de proyecto especificados.
   *  @param categories Categorías para filtrar los documentos.
   *  @param projectTypes Tipos de proyecto para filtrar los documentos.
+  *  @param doc 
   *  @returns  True si el documento coincide con las categorías y tipos de proyecto especificados, false en caso contrario.
   *  @remarks
   *  Si no se especifican categorías o tipos de proyecto, se consideran todos los documentos como válidos.
@@ -48,6 +49,10 @@ async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retri
     retrieverResult.invoke(query, { ...config, runName: "vector-retriever" }),
     bm25Retriever.invoke(query, { ...config, runName: "bm25-retriever" }),
   ]);
+
+  if (bm25Results.status === "rejected" && vectorResults.status === "rejected") {
+    throw new AggregateError([vectorResults.reason, bm25Results.reason], "Fallaron las dos búsquedas")
+  };
 
   const hybridResults = reciprocalRankFusion(
     vectorResults?.status === "fulfilled" ? vectorResults.value : [],
