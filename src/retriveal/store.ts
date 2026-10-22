@@ -33,6 +33,8 @@ class RetrievalStore {
   private readonly vectorStore: MemoryVectorStore =new MemoryVectorStore( 
     new OpenAIEmbeddings({
       model: "text-embedding-3-small",
+      timeout: 15000,
+      maxRetries: 0,
     })
   )
 

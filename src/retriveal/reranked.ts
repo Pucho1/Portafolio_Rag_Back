@@ -1,6 +1,8 @@
-import { CohereRerank } from "@langchain/cohere";
-import { Document } from "@langchain/core/documents";
+import { CohereRerank }                   from "@langchain/cohere";
+import { Document }                       from "@langchain/core/documents";
 import { RunnableConfig, RunnableLambda } from "@langchain/core/runnables";
+
+import { CohereClient } from "cohere-ai";
 
 import "dotenv/config";
 
@@ -15,8 +17,9 @@ type RerankInput = {
   query: string;
 }
 
+const cohereClient = new CohereClient({ token:  process.env.COHERE_API_KEY, timeoutInSeconds: 2, maxRetries: 0 });
 const cohereRerank = new CohereRerank({
-  apiKey: process.env.COHERE_API_KEY,
+  client: cohereClient,
   model: "rerank-multilingual-v3.0",
 });
 
