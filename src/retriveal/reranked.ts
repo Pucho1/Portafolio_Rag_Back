@@ -37,8 +37,6 @@ const cohereRerankRunnable = RunnableLambda.from(
 .withFallbacks([
   RunnableLambda.from(
     ({ hybridResults }: RerankInput): RerankedDocs[] => {
-
-
       const rerankedDocs = hybridResults.slice(0, RERANK_TOP_N).map((_doc, index) => ({
         index,
         relevanceScore: null,
@@ -53,6 +51,14 @@ const cohereRerankRunnable = RunnableLambda.from(
 // para mejorar la relevancia de los resultados devueltos por un motor de búsqueda. 
 // El modelo se entrena utilizando un conjunto de datos de consultas y documentos relevantes, 
 // y aprende a asignar puntuaciones a los documentos en función de su relevancia para una consulta dada.
+
+/**
+ * Obtiene los documentos reordenados utilizando el modelo de reordenamiento de Cohere.
+ * @param hybridResults Documentos híbridos obtenidos de la búsqueda.
+ * @param query Consulta de búsqueda.
+ * @param config Configuración para la invocación del reordenador.
+ * @returns Promise que resuelve en un array de documentos reordenados con sus índices y puntuaciones de relevancia.
+ */
 export async function getReRankedDoc (hybridResults: Document[], query: string, config?: RunnableConfig): Promise<RerankedDocs[]> {
 
   return cohereRerankRunnable.invoke({ hybridResults, query }, config);
