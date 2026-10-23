@@ -27,7 +27,7 @@ export async function getRetrieverResult(input: RouterOutput, config?: RunnableC
     return [];
   }
 
-  const categories = decision.category ?? [];
+  const categories   = decision.category ?? [];
   const projectTypes = decision.projectType ?? [];
 
   const hybridStep = RunnableLambda.from(

@@ -55,8 +55,8 @@ async function hibridResult (  retrieverResult: VectorStoreRetriever,  bm25Retri
   };
 
   const hybridResults = reciprocalRankFusion(
-    vectorResults?.status === "fulfilled" ? vectorResults.value : [],
-    bm25Results?.status === "fulfilled" ? bm25Results.value : [],
+    vectorResults.status === "fulfilled" ? vectorResults.value : [],
+    bm25Results.status === "fulfilled" ? bm25Results.value : [],
   );
 
   return hybridResults;
