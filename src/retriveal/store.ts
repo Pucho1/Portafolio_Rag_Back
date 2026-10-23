@@ -5,6 +5,24 @@ import { OpenAIEmbeddings }  from '@langchain/openai';
 import { ingestDoc } from '../ingestion/ingestion';
 import "dotenv/config";
 
+const EMBEDDING_MODEL = process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-small";
+
+const QUERY_EMBEDDING_TIMEOUT_MS  = 2000; // medido ~0,2 s; si falla, se degrada a BM25
+const QUERY_EMBEDDING_MAX_RETRIES = 0;    // con BM25 como alternativa, no compensa reintentar
+
+
+// Ingesta: lote al arrancar, sin alternativa. Valores por defecto de LangChain
+// (6 reintentos con backoff), pensados para trabajos por lotes.
+const ingestionEmbeddings = new OpenAIEmbeddings({
+  model: EMBEDDING_MODEL,
+});
+
+// Preguntas: una frase por petición, con el usuario esperando.
+const queryEmbeddings = new OpenAIEmbeddings({
+  model:      EMBEDDING_MODEL,
+  timeout:    QUERY_EMBEDDING_TIMEOUT_MS,
+  maxRetries: QUERY_EMBEDDING_MAX_RETRIES,
+});
 
 /**
  * Mantiene en memoria los documentos ingeridos y su indice vectorial.
@@ -24,20 +42,15 @@ class RetrievalStore {
   /** Promesa compartida que evita ejecutar la ingesta mas de una vez. */
   private initPromise: Promise<void> | null = null;
 
+
   /**
    * Indice vectorial en memoria respaldado por embeddings de OpenAI.
    *
    * El modelo se usa para convertir los fragmentos de texto en vectores
    * antes de almacenarlos en `vectorStore`.
    */
-  private readonly vectorStore: MemoryVectorStore =new MemoryVectorStore( 
-    new OpenAIEmbeddings({
-      model: "text-embedding-3-small",
-      timeout: 15000,
-      maxRetries: 0,
-    })
-  )
 
+    private readonly vectorStore: MemoryVectorStore =new MemoryVectorStore(  queryEmbeddings );
 
   /**
    * Inicializa el almacenamiento si aun no se ha inicializado.
@@ -56,7 +69,12 @@ class RetrievalStore {
    */
   private async loadData(): Promise<void> {
     const { chunks, parents } = await ingestDoc();
-    await this.vectorStore.addDocuments(chunks);
+
+    const vectors = await ingestionEmbeddings.embedDocuments(
+      chunks.map((chunk) => chunk.pageContent)
+    );
+
+    await this.vectorStore.addVectors(vectors, chunks);
 
     this.chunks = chunks;
     this.parents = parents;
