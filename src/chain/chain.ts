@@ -44,6 +44,7 @@ export interface ChainResult {
     context: string;
     answer: string;
     outcome: ChainOutcome;
+    truncated: boolean;
 }
 
 
@@ -112,21 +113,31 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
     ["human", HUMAN_TEMPLATE],
 ]);
 
+// Se construye una vez al cargar el módulo, no en cada petición
+const answerChain = chatPrompt.pipe(model);
+
 /**
  * Genera la respuesta final del modelo con el contexto recuperado y la pregunta del usuario.
  * @param input Objeto con la consulta y el contexto ya resuelto por el enrutador y la recuperación.
  * @param config Configuración opcional de ejecución de LangChain.
  * @returns La respuesta textual generada por el modelo.
  */
-const getAnswer = RunnablePassthrough.assign<RouterOutput & { context: string }, { answer: string }>({
-    answer: (input, config: RunnableConfig) => {
-        const subChaing = chatPrompt.pipe(model).pipe(new StringOutputParser());
-        return subChaing.invoke({
+const getAnswer = RunnableLambda.from(
+    async (input:RouterOutput & { context: string }, config?: RunnableConfig) => {
+
+        const message = await answerChain.invoke({
             question: input.query,
             context: input.context,
         }, config);
+
+        return {
+            ...input,
+            answer:    message.text,
+            truncated: message.response_metadata.finish_reason === "length",
+        };
     },
-}).withConfig({ runName: "get-answer" });
+
+).withConfig({ runName: "get-answer" });
 
 /**
  * Crea una rama terminal que devuelve un ChainResult fijo sin contexto.
@@ -141,6 +152,7 @@ const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) 
         context: "",
         answer,
         outcome,
+        truncated: false,
     })).withConfig({ runName });
 
 /**
@@ -150,11 +162,12 @@ const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) 
  */
 const inDomain = retrivelResult
     .pipe(getAnswer)
-    .pipe(RunnableLambda.from((input: RouterOutput & { context: string; answer: string }): ChainResult => ({
+    .pipe(RunnableLambda.from((input: RouterOutput & { context: string; answer: string, truncated: boolean }): ChainResult => ({
         question: input.query,
         context:  input.context,
         answer:   input.answer,
-        outcome:  "answered"
+        outcome:  "answered",
+        truncated: input.truncated,
     }))
 ).withConfig({ runName: "in-domain" })
 .withFallbacks([
