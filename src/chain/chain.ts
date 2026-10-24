@@ -6,7 +6,6 @@ import {
     RunnablePassthrough }       from "@langchain/core/runnables";
 import { Document }             from "@langchain/core/documents";
 import { ChatPromptTemplate }   from "@langchain/core/prompts";
-import { StringOutputParser }   from "@langchain/core/output_parsers";
 
 import { getRetrieverResult }            from "../retriveal";
 import { initApp }                       from "../bootstrap";
