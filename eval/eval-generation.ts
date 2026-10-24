@@ -4,7 +4,7 @@ import path         from "node:path";
 import { LangfuseClient } from "@langfuse/client";
 
 import { shutdownTracing }       from "../src/observability/langfuse";
-import { GenerationEvalDataset } from "./types";
+import { EvalDatasetSchema }     from "./types";
 import { 
   deterministicEvaluator,
   evaluator,
@@ -23,7 +23,7 @@ const langfuse = new LangfuseClient();
 async function main() {
   const filePath = path.resolve(process.cwd(), "eval", "generation_eval_dataset.json");
   const contents = await fs.readFile(filePath, { encoding: "utf8" });
-  const dataset: GenerationEvalDataset = JSON.parse(contents);
+  const dataset  = EvalDatasetSchema.parse(JSON.parse(contents));
 
 
   const experimentData = getexperimentData(dataset);

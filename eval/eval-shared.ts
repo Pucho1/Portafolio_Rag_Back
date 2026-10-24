@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 
-import { Eval, GenerationEvalDataset, Task } from "./types";
+import { Eval, EvalDataset, Task }           from "./types";
 import { ChainResult, runChain }             from "../src/chain/chain";
 import { langFuseCallBack }                  from "../src/observability/langfuse";
 import { judgeCriteria }                     from "../src/evaluación/judge/judge";
@@ -11,14 +11,15 @@ import { judgeCriteria }                     from "../src/evaluación/judge/judg
  * @param dataset 
  * @returns Un array de objetos con la consulta, el criterio de éxito y los metadatos del caso.
  */
-export const getexperimentData = ( dataset: GenerationEvalDataset )  => {
+export const getexperimentData = ( dataset: EvalDataset )  => {
     const experimentData = dataset.casos.map((caso) => ({
         input: { query: caso.query },
         expectedOutput: caso.resultado_esperado,
-        metadata: { 
-          caseId:   caso.id,
-          tipo:     caso.tipo,
-          criterio: caso.criterio_exito,
+        metadata: {
+          caseId:       caso.id,
+          tipo:         caso.tipo,
+          criterio:     caso.criterio,
+          requiereJuez: caso.requiere_juez,
         },
     }));
 
@@ -33,7 +34,7 @@ export const getexperimentData = ( dataset: GenerationEvalDataset )  => {
  */
 export const evaluator: Eval = async ({ output, metadata, input }) => {
 
-  if (!metadata || metadata?.tipo === "limite_deterministico") return [];
+  if (!metadata?.requiereJuez) return [];
 
   const result = output as ChainResult;
 
@@ -60,9 +61,9 @@ export const evaluator: Eval = async ({ output, metadata, input }) => {
  * @returns Devuelve un objeto con el nombre del evaluador, el valor (1 o 0) y un comentario con la respuesta generada.
  */
 export const deterministicEvaluator: Eval = async ({ output, expectedOutput }) => {
-  if (!expectedOutput?.outcome) return [];
+  if (!expectedOutput?.outcomes_validos) return [];
 
-  const outcomeOk = output.outcome === expectedOutput.outcome;
+  const outcomeOk = expectedOutput.outcomes_validos.includes(output.outcome);
   const contextOk = output.outcome === "answered" ? output.context.trim().length > 0 : output.context.trim() === "";
 
   const cumpleCriterio = outcomeOk && contextOk;
