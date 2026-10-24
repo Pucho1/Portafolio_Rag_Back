@@ -32,8 +32,8 @@ async function main() {
 
   try{  
     const result  = await langfuse.experiment.run({
-        name: "Rag digital twin Miguel Test",
-        description: "Testing Rag For gigital twin",
+        name: "Rag digital twin Miguel - generación",
+        description: "Fidelidad y control de dominio del gemelo digital",
         data: experimentData,
         task: myTask,
         evaluators: [ evaluator , deterministicEvaluator ],

@@ -30,8 +30,8 @@ async function main() {
 
   try{  
     const result  = await langfuse.experiment.run({
-        name: "Rag digital twin Miguel Test",
-        description: "battery dataset attacks For gigital twin",
+        name: "Rag digital twin Miguel - ataques",
+        description: "Batería de ataques (prompt injection / jailbreak) contra el gemelo digital",
         data: experimentData,
         task: myTask,
         evaluators: [ evaluator , deterministicEvaluator ],
