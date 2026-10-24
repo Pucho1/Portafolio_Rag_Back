@@ -18,6 +18,7 @@ export const getexperimentData = ( dataset: EvalDataset )  => {
         metadata: {
           caseId:       caso.id,
           tipo:         caso.tipo,
+          familia:      caso.familia,
           criterio:     caso.criterio,
           requiereJuez: caso.requiere_juez,
         },
