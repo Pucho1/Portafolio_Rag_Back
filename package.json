@@ -7,7 +7,8 @@
     "dev:ingestion": "tsx src/ingestion/ingestion.ts",
     "dev:embeddings": "tsx src/experiments/embeddings.ts",
     "dev:evalgeneration": "tsx eval/eval-generation.ts",
-    "dev:testrout": "tsx src/routing/router.test-run.ts"
+    "dev:testrout": "tsx src/routing/router.test-run.ts",
+    "dev:evalattacks": "tsx eval/eval-attacks.ts"
   },
   "keywords": [],
   "author": "",
