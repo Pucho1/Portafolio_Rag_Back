@@ -29,8 +29,9 @@ const getValues = (categories: string[], projectTypes: string[], doc: Document) 
   const categoryMatches =
     categories.length === 0 || categories.includes(doc.metadata.category);
 
+  // Solo los chunks de proyectos tienen projectType: los demás no se descartan por este criterio.
   const projectTypeMatches =
-    projectTypes.length === 0 || projectTypes.includes(doc.metadata.projectType);
+    projectTypes.length === 0 || !doc.metadata.projectType || projectTypes.includes(doc.metadata.projectType);
 
   return categoryMatches && projectTypeMatches;
 };
