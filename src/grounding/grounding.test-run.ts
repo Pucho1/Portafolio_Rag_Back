@@ -1,11 +1,14 @@
-import { langFuseCallBack } from "../observability/langfuse";
+import { langFuseCallBack, registerTracing, shutdownTracing } from "../observability/langfuse";
 import { verifyAnswerQuery } from "./grounding";
 
-const handler = langFuseCallBack("gronding-script", "eval-user", "rag-portafolio-eval");
+// Sin el provider registrado, el CallbackHandler genera spans que no llegan a Langfuse
+registerTracing();
+
+const handler = langFuseCallBack("gronding-script", "eval-user", "rag-portafolio-eval-gronding");
 
 
 /**
- * Script manual para probar la clasificación del router (npm run dev:testrout).
+ * Script manual para probar la clasificación del groundin (dev:evalgrounding).
  */
 async function main (){
 
@@ -257,13 +260,17 @@ La trayectoria profesional documentada muestra que Miguel tuvo una experiencia p
       }
   ]
 
-  await Promise.all(queries.map(async (query) => {
-    const result = await verifyAnswerQuery(
-      { context: query.context, answer: query.answer },
-      { callbacks: [handler] }
-    )
-    console.log("esta es la salida del groundin ======>", JSON.stringify(result, null, 2))
-  }))
+  try {
+    await Promise.all(queries.map(async (query) => {
+      const result = await verifyAnswerQuery(
+        { context: query.context, answer: query.answer },
+        { callbacks: [handler] }
+      )
+      console.log("esta es la salida del groundin ======>", JSON.stringify(result, null, 2))
+    }))
+  } finally { // envía los spans pendientes antes de que termine el proceso
+    await shutdownTracing();
+  }
 };
 
 
