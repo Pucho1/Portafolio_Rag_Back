@@ -8,7 +8,8 @@
     "dev:embeddings": "tsx src/experiments/embeddings.ts",
     "dev:evalgeneration": "tsx eval/eval-generation.ts",
     "dev:testrout": "tsx src/routing/router.test-run.ts",
-    "dev:evalattacks": "tsx eval/eval-attacks.ts"
+    "dev:evalattacks": "tsx eval/eval-attacks.ts",
+    "dev:evalgrounding": "tsx src/grounding/grounding.test-run.ts"
   },
   "keywords": [],
   "author": "",
