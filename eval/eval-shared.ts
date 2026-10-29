@@ -86,7 +86,7 @@ export const deterministicEvaluator: Eval = async ({ output, expectedOutput }) =
 export const myTask: Task = async ({input }) => {
   if (!input || typeof input !== "object" ||
       !("query" in input) ||
-      typeof input.query !== "string") 
+      typeof input.query !== "string")
   {
     throw new TypeError("El item del experimento debe incluir query.");
   }
