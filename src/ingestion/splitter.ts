@@ -127,8 +127,9 @@ function createParentDocument(  section: ParentSection,): Document {
     section.title,
   );
 
+  // El título del Parent va también en el contenido: sin él, los ### quedan sin su sección padre para el LLM.
   return new Document({
-    pageContent: section.content.trim(),
+    pageContent: `## ${section.title}\n\n${section.content.trim()}`,
 
     metadata: {
       ...section.metadata,
@@ -152,10 +153,11 @@ function withContext(  content: string,  headers: string[],): string {
   return `${context}${content.trim()}`;
 }
 
-async function createChildren(  parent: Document,): Promise<Document[]> {
+async function createChildren(  parent: Document,  content: string,): Promise<Document[]> {
+  // Se parte el contenido sin el título: withContext ya lo antepone a cada chunk.
   const splitDocuments = await splitter.splitDocuments([
     new Document({
-      pageContent: parent.pageContent,
+      pageContent: content,
       metadata: parent.metadata,
     }),
   ]);
@@ -203,7 +205,7 @@ export async function splitMarkdownDocuments(  documents: Document[],): Promise<
 
       parents.set(parentId, parent);
 
-      const children = await createChildren(parent);
+      const children = await createChildren(parent, section.content.trim());
 
       chunks.push(...children);
     }
