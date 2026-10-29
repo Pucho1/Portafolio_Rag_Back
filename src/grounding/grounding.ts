@@ -1,10 +1,14 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOpenAI }         from "@langchain/openai";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { 
+  RunnableConfig, 
+  RunnableLambda, 
+  RunnablePassthrough 
+}     from "@langchain/core/runnables";
 
 import { z } from "zod";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 import "dotenv/config";
-import { RunnableConfig } from "@langchain/core/runnables";
 
 
 export const ClaimSchema = z.object({
@@ -97,28 +101,30 @@ const groundingPrompt = ChatPromptTemplate.fromMessages([
   ["human", VERIFIER_HUMAN_TEMPLATE],
 ]);
 
-export async function verifyAnswerQuery({context, answer}: veryfyEnter,   config?: RunnableConfig): Promise<GroundingResult> {
 
-  const promptValue = await groundingPrompt.invoke({ context, answer });
-  const claims      = await structuredModel.invoke(promptValue, { ...config, runName: "verify-answer-grounded" });
+const checkQuotes = RunnableLambda.from(
+  ({ context, verification }: { context: string; verification: Verification }): GroundingResult => {
 
-  // Una afirmación respaldada solo se mantiene si todas sus citas existen literalmente en el contexto
-  const normalizedContext = normalize(context);
+    const normalizedContext = normalize(context);
 
-  const checkedClaims = claims.claims.map((claim) => {
-    if (!claim.supported) return claim;
+    const claims = verification.claims.map((claim) => {
+      if (!claim.supported) return claim;
+      const quotesExist = claim.evidence?.every((q) => normalizedContext.includes(normalize(q))) ?? false;
+      return quotesExist ? claim : { ...claim, supported: false };
+    });
 
-    const quotesExist = claim.evidence?.every((quote) => normalizedContext.includes(normalize(quote))) ?? false;
+    return { claims, isGrounded: claims.every((c) => c.supported) };
+  }
+).withConfig({runName: "check-quotes"})
 
-    return quotesExist ? claim : { ...claim, supported: false };
-  });
+const groundingChain = RunnablePassthrough
+  .assign({ verification: groundingPrompt.pipe(structuredModel) })
+  .pipe(checkQuotes)
+  .withConfig({ runName: "verify-answer-grounded" });
 
-  // El modelo aporta las afirmaciones; la decisión la toma el código.
-  // every() sobre una lista vacía devuelve true: una abstención se considera respaldada.
-  return {
-    claims:     checkedClaims,
-    isGrounded: checkedClaims.every((c) => c.supported),
-  };
+export async function verifyAnswerQuery(input: veryfyEnter,  config?: RunnableConfig): Promise<GroundingResult> {
+
+  return groundingChain.invoke(input, config);
 };
 
 
