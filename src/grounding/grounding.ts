@@ -23,76 +23,29 @@ export type GroundingResult = { claims: Claim[], isGrounded: boolean };
 
 type veryfyEnter = {
   context: string, answer : string
- }
+}
+
+const GROUNDING_MAX_TOKENS   = 600;
+const GROUNDING_TIMEOUT_MS   = 12000;
+const GROUNDING_MAX_RETRIES  = 1;
 
 
 const model = new ChatOpenAI({
   model: "gpt-4o",
   temperature: 0,
-  // maxTokens: ROUTER_MAX_TOKENS,
-  // timeout: ROUTER_TIMEOUT_MS,
-  // maxRetries: ROUTER_MAX_RETRIES,
+  maxTokens: GROUNDING_MAX_TOKENS,
+  timeout: GROUNDING_TIMEOUT_MS,
+  maxRetries: GROUNDING_MAX_RETRIES,
 });
 
+const structuredModel = model.withStructuredOutput(VerificationSchema);
 
+const VERIFIER_HUMAN_TEMPLATE = `
+  <context>{context}</context>
 
-export async function verifyAnswerQuery({context, answer}: veryfyEnter,   config?: RunnableConfig): Promise<GroundingResult> {
+  <answer>{answer}</answer>
+`;
 
-  const structuredModel = model.withStructuredOutput(VerificationSchema);
-  
-  const VERIFIER_HUMAN_TEMPLATE = `
-    <context>{context}</context>
-
-    <answer>{answer}</answer>
-  `;
-
-  const groundingPrompt = ChatPromptTemplate.fromMessages([
-    ["system", getSytemPront()],
-    ["human", VERIFIER_HUMAN_TEMPLATE],
-  ]);
-
-  const promptValue = await groundingPrompt.invoke({ context, answer });
-
-  const claims      = await structuredModel.invoke(promptValue, { ...config, runName: "verify-answer-grounded" });
-
-  // Una afirmación respaldada solo se mantiene si todas sus citas existen literalmente en el contexto
-  const normalizedContext = normalize(context);
-
-  const checkedClaims = claims.claims.map((claim) => {
-    if (!claim.supported) return claim;
-
-    const quotesExist = claim.evidence?.every((quote) => normalizedContext.includes(normalize(quote))) ?? false;
-
-    return quotesExist ? claim : { ...claim, supported: false };
-  });
-
-  // El modelo aporta las afirmaciones; la decisión la toma el código.
-  // every() sobre una lista vacía devuelve true: una abstención se considera respaldada.
-  return {
-    claims:     checkedClaims,
-    isGrounded: checkedClaims.every((c) => c.supported),
-  };
-
-};
-
-
-/**
- * Normaliza un texto para comparar citas: quita Markdown (*, #, `), junta espacios y saltos de línea y pasa a minúsculas.
- * @param text Texto a normalizar.
- * @returns El texto normalizado.
- */
-const normalize = (text: string): string =>
-  text
-    .replace(/[*#`]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-
-
-/**
- * Reglas para la generación de rutas de recuperación.
- * @returns Pront de sistema para el modelo de lenguaje que valida si una respuesta está respaldada por un contexto.
- */
 const getSytemPront = (): string => {
 
   return `
@@ -137,3 +90,49 @@ const getSytemPront = (): string => {
         When supported is false, null. If you cannot quote it exactly, the claim is not supported.
   `
 };
+
+
+const groundingPrompt = ChatPromptTemplate.fromMessages([
+  ["system", getSytemPront()],
+  ["human", VERIFIER_HUMAN_TEMPLATE],
+]);
+
+export async function verifyAnswerQuery({context, answer}: veryfyEnter,   config?: RunnableConfig): Promise<GroundingResult> {
+
+  const promptValue = await groundingPrompt.invoke({ context, answer });
+  const claims      = await structuredModel.invoke(promptValue, { ...config, runName: "verify-answer-grounded" });
+
+  // Una afirmación respaldada solo se mantiene si todas sus citas existen literalmente en el contexto
+  const normalizedContext = normalize(context);
+
+  const checkedClaims = claims.claims.map((claim) => {
+    if (!claim.supported) return claim;
+
+    const quotesExist = claim.evidence?.every((quote) => normalizedContext.includes(normalize(quote))) ?? false;
+
+    return quotesExist ? claim : { ...claim, supported: false };
+  });
+
+  // El modelo aporta las afirmaciones; la decisión la toma el código.
+  // every() sobre una lista vacía devuelve true: una abstención se considera respaldada.
+  return {
+    claims:     checkedClaims,
+    isGrounded: checkedClaims.every((c) => c.supported),
+  };
+};
+
+
+/**
+ * Normaliza un texto para comparar citas: quita Markdown (*, #, `), junta espacios y saltos de línea y pasa a minúsculas.
+ * @param text Texto a normalizar.
+ * @returns El texto normalizado.
+ */
+const normalize = (text: string): string =>
+  text
+    .replace(/[*#`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+
+
