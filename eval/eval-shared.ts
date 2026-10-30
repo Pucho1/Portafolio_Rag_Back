@@ -23,7 +23,6 @@ export const getexperimentData = ( dataset: EvalDataset )  => {
           requiereJuez: caso.requiere_juez,
         },
     }));
-
     return experimentData;
 };
 
