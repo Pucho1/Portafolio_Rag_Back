@@ -1,0 +1,225 @@
+{
+  "descripcion": "Dataset del verificador de grounding - Fase 6.5. Cada caso es una respuesta y el contexto contra el que se verifica. Mide dos métricas: la tasa de detección (respuestas con alucinación marcadas como isGrounded false) y la tasa de falsa alarma (respuestas fieles marcadas como isGrounded false). Los contextos son fragmentos literales de data/ con la misma forma que los documentos padre que recupera el retrieval (encabezado de sección incluido).",
+  "fecha_creacion": "2026-10-29",
+  "nota_importante": "Línea base de regresión escrita a mano, no una medida exhaustiva. Las familias cubren los fallos observados al construir el verificador: resúmenes, encabezados, mentira pegada a una verdad y asociación equivocada (el límite de la comprobación de citas en código). Si los documentos de data/ cambian, hay que regenerar los contextos o los casos dejarán de corresponder con lo que recupera el sistema.",
+  "contextos": {
+    "hiberus": "## Hiberus Tecnología\n\nMiguel Antonio Martínez Ochandarena trabajó como programador en Hiberus Tecnología entre diciembre de 2022 y enero de 2025.\n\nEste trabajo fue desde varias ubicaciones: La Habana, Cuba; Montevideo, Uruguay; y España, Zaragoza.\n\nDesarrolló y mantuvo soluciones de software para diferentes proyectos y clientes como:\n\n### Banco Ibercaja\n\nEn este cliente Miguel participó como desarrollador Front End.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React\n* React Router\n* Tailwind\n* React Testing Library\n* Chart.js\n* React DevTools\n\n### Banco Santander\n\nEn este cliente Miguel participó como desarrollador Full Stack.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React\n* Angular\n* Redux\n* TanStack Query\n* React Router\n* SQL\n* Node.js\n* Tailwind\n* Material UI\n* GraphQL\n* Chart.js\n\n### Aplicación para gestión de notificaciones de estudiantes\n\nEn este proyecto Miguel participó en el desarrollo de una aplicación para la gestión de notificaciones de estudiantes, liderando técnicamente el proyecto.\n\n**Responsabilidad destacada:**\n\n* Liderazgo técnico del proyecto.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Angular\n* Axios\n* PrimeNG\n\n### Equipo de desarrollo Front de El País\n\nMiguel formó parte del equipo de desarrollo frontend de El País.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* JavaScript\n* Axios\n* Next.js\n* SCSS\n\n### Tecnologías y herramientas generales utilizadas en Hiberus por Miguel\n\n* JavaScript\n* React\n* Angular\n* Node.js\n* TanStack Query\n* Jenkins\n* GitLab\n* GitFlow\n* Figma\n* Fortify\n* Sonar\n* Bootstrap\n* SCSS\n* CSS\n* Mock Service Worker\n* Jest\n* Vitest\n* CI/CD\n* APIs REST\n* Arquitectura hexagonal",
+    "markas": "## MARK’AS — Agencia Cubana de Publicidad y Promoción\n\nMiguel trabajó como líder de equipo de programación en MARK’AS — Agencia Cubana de Publicidad y Promoción desde mayo de 2020 hasta la actualidad (según el periodo indicado para esta experiencia en el CV), liderando un equipo de programación de 7 personas.\n\nParticipó en la gestión y soporte de proyectos informáticos, arquitectura de bases de datos e ingeniería de software.\n\n### VisNova\n\nMiguel participó como líder técnico en el proyecto de desarrollo local VisNova.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React.js\n* Chart.js\n* Bootstrap\n* React Router\n* Axios\n* React Testing Library\n* Redux\n* PostgreSQL\n* Node.js\n* Arquitectura de bases de datos\n* Zustand\n* XAMPP\n* FileZilla\n* Node.js\n* .Net\n\n### Nails D’ Zafiros\n\nMiguel desarrolló una landing page para el salón de belleza Nails D’ Zafiros.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Angular\n* Angular Material\n* TanStack Query\n* APIs nativas del navegador\n* PrimeNG\n\n### Marina Hemingway\n\nMiguel renovó la página oficial de Marina Hemingway.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Vue.js\n* Pinia\n* Vue Router\n* Vuetify\n* Vue DevTools\n\n### Responsabilidades adicionales\n\nDurante esta etapa Miguel también realizó actividades relacionadas con:\n\n* Gestión y soporte de proyectos informáticos.\n* Arquitectura de bases de datos.\n* Ingeniería de software.\n* Liderazgo técnico.\n* Organización de equipos.\n* Metodologías ágiles, incluyendo Scrum.\n\nEl CV también indica que Miguel tuvo responsabilidades relacionadas con contabilidad, administración y publicidad/promoción dentro de la organización.",
+    "hiberus_markas": "## Hiberus Tecnología\n\nMiguel Antonio Martínez Ochandarena trabajó como programador en Hiberus Tecnología entre diciembre de 2022 y enero de 2025.\n\nEste trabajo fue desde varias ubicaciones: La Habana, Cuba; Montevideo, Uruguay; y España, Zaragoza.\n\nDesarrolló y mantuvo soluciones de software para diferentes proyectos y clientes como:\n\n### Banco Ibercaja\n\nEn este cliente Miguel participó como desarrollador Front End.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React\n* React Router\n* Tailwind\n* React Testing Library\n* Chart.js\n* React DevTools\n\n### Banco Santander\n\nEn este cliente Miguel participó como desarrollador Full Stack.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React\n* Angular\n* Redux\n* TanStack Query\n* React Router\n* SQL\n* Node.js\n* Tailwind\n* Material UI\n* GraphQL\n* Chart.js\n\n### Aplicación para gestión de notificaciones de estudiantes\n\nEn este proyecto Miguel participó en el desarrollo de una aplicación para la gestión de notificaciones de estudiantes, liderando técnicamente el proyecto.\n\n**Responsabilidad destacada:**\n\n* Liderazgo técnico del proyecto.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Angular\n* Axios\n* PrimeNG\n\n### Equipo de desarrollo Front de El País\n\nMiguel formó parte del equipo de desarrollo frontend de El País.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* JavaScript\n* Axios\n* Next.js\n* SCSS\n\n### Tecnologías y herramientas generales utilizadas en Hiberus por Miguel\n\n* JavaScript\n* React\n* Angular\n* Node.js\n* TanStack Query\n* Jenkins\n* GitLab\n* GitFlow\n* Figma\n* Fortify\n* Sonar\n* Bootstrap\n* SCSS\n* CSS\n* Mock Service Worker\n* Jest\n* Vitest\n* CI/CD\n* APIs REST\n* Arquitectura hexagonal\n\n## MARK’AS — Agencia Cubana de Publicidad y Promoción\n\nMiguel trabajó como líder de equipo de programación en MARK’AS — Agencia Cubana de Publicidad y Promoción desde mayo de 2020 hasta la actualidad (según el periodo indicado para esta experiencia en el CV), liderando un equipo de programación de 7 personas.\n\nParticipó en la gestión y soporte de proyectos informáticos, arquitectura de bases de datos e ingeniería de software.\n\n### VisNova\n\nMiguel participó como líder técnico en el proyecto de desarrollo local VisNova.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React.js\n* Chart.js\n* Bootstrap\n* React Router\n* Axios\n* React Testing Library\n* Redux\n* PostgreSQL\n* Node.js\n* Arquitectura de bases de datos\n* Zustand\n* XAMPP\n* FileZilla\n* Node.js\n* .Net\n\n### Nails D’ Zafiros\n\nMiguel desarrolló una landing page para el salón de belleza Nails D’ Zafiros.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Angular\n* Angular Material\n* TanStack Query\n* APIs nativas del navegador\n* PrimeNG\n\n### Marina Hemingway\n\nMiguel renovó la página oficial de Marina Hemingway.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Vue.js\n* Pinia\n* Vue Router\n* Vuetify\n* Vue DevTools\n\n### Responsabilidades adicionales\n\nDurante esta etapa Miguel también realizó actividades relacionadas con:\n\n* Gestión y soporte de proyectos informáticos.\n* Arquitectura de bases de datos.\n* Ingeniería de software.\n* Liderazgo técnico.\n* Organización de equipos.\n* Metodologías ágiles, incluyendo Scrum.\n\nEl CV también indica que Miguel tuvo responsabilidades relacionadas con contabilidad, administración y publicidad/promoción dentro de la organización.",
+    "hiberus_ceige": "## Hiberus Tecnología\n\nMiguel Antonio Martínez Ochandarena trabajó como programador en Hiberus Tecnología entre diciembre de 2022 y enero de 2025.\n\nEste trabajo fue desde varias ubicaciones: La Habana, Cuba; Montevideo, Uruguay; y España, Zaragoza.\n\nDesarrolló y mantuvo soluciones de software para diferentes proyectos y clientes como:\n\n### Banco Ibercaja\n\nEn este cliente Miguel participó como desarrollador Front End.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React\n* React Router\n* Tailwind\n* React Testing Library\n* Chart.js\n* React DevTools\n\n### Banco Santander\n\nEn este cliente Miguel participó como desarrollador Full Stack.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* React\n* Angular\n* Redux\n* TanStack Query\n* React Router\n* SQL\n* Node.js\n* Tailwind\n* Material UI\n* GraphQL\n* Chart.js\n\n### Aplicación para gestión de notificaciones de estudiantes\n\nEn este proyecto Miguel participó en el desarrollo de una aplicación para la gestión de notificaciones de estudiantes, liderando técnicamente el proyecto.\n\n**Responsabilidad destacada:**\n\n* Liderazgo técnico del proyecto.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* Angular\n* Axios\n* PrimeNG\n\n### Equipo de desarrollo Front de El País\n\nMiguel formó parte del equipo de desarrollo frontend de El País.\n\n**Tecnologías y herramientas usadas por Miguel:**\n\n* JavaScript\n* Axios\n* Next.js\n* SCSS\n\n### Tecnologías y herramientas generales utilizadas en Hiberus por Miguel\n\n* JavaScript\n* React\n* Angular\n* Node.js\n* TanStack Query\n* Jenkins\n* GitLab\n* GitFlow\n* Figma\n* Fortify\n* Sonar\n* Bootstrap\n* SCSS\n* CSS\n* Mock Service Worker\n* Jest\n* Vitest\n* CI/CD\n* APIs REST\n* Arquitectura hexagonal\n\n## CEIGE — Centro de Informatización de la Gestión de Entidades\n\nMiguel trabajó como programador en CEIGE — Centro de Informatización de la Gestión de Entidades, en La Habana, Cuba, entre septiembre de 2017 y diciembre de 2018.\n\nDesarrolló soluciones informáticas y participó en el diseño y prototipado de interfaces dinámicas y estáticas.\n\n### Fiscalía General de la República de Cuba\n\nMiguel participó en el desarrollo web de una solución para la Fiscalía General de la República de Cuba.\n\n**Tecnologías y herramientas:**\n\n* Python\n* Django\n* Bootstrap\n* jQuery\n* Docker\n* MVC\n* SQL\n\n### Grupo empresarial Tabacuba\n\nMiguel participó en el desarrollo web para el Grupo empresarial Tabacuba.\n\n**Tecnologías:**\n\n* JavaScript\n* HTML\n\n### Tecnologías y herramientas generales\n\n* ERP y CRM\n* Docker\n* GitLab\n* GitHub\n* JavaScript\n* Bootstrap\n* PostgreSQL\n* CSS\n* SQL\n* XAMPP\n* Odoo\n* APIs REST",
+    "evolucion": "## Evolución profesional\n\nLa trayectoria profesional documentada muestra que Miguel tuvo una experiencia progresiva en diferentes áreas del desarrollo de software:\n\n1. **CEIGE** — desarrollo de soluciones web y software.\n2. **GET** — desarrollo frontend y full stack en proyectos relacionados con hotelería y turismo.\n3. **MARK’AS** — desarrollo de software y evolución hacia liderazgo técnico y gestión de equipos.\n4. **Hiberus Tecnología** — participación en proyectos de mayor escala para diferentes clientes, incluyendo desarrollo frontend, full stack y liderazgo técnico en proyectos concretos.\n\nAdemás de la evolución en tecnologías y responsabilidades, la trayectoria de Miguel incluye experiencia en arquitectura de software, bases de datos, testing, CI/CD, DevOps y liderazgo técnico.",
+    "perfil_formacion_idiomas": "## Liderazgo técnico\n\nCuenta con experiencia trabajando en equipos de desarrollo y desempeñando funciones de liderazgo técnico.\n\nEn MARK’AS fue responsable de un equipo de programación de siete personas, participando en la gestión y soporte de proyectos informáticos, arquitectura de bases de datos e ingeniería de software.\n\nTambién posee experiencia trabajando con metodologías ágiles, incluyendo Scrum.\n\n## Formación\n\nEs Ingeniero en Ciencias Informáticas por la Universidad de las Ciencias Informáticas (UCI), en La Habana, Cuba, con estudios realizados entre septiembre de 2011 y julio de 2017.\n\nDurante su formación universitaria participó en proyectos de investigación, actividades académicas y concursos de programación.\n\n## Idiomas\n\nEspañol: lengua materna.\n\nInglés: nivel B2 indicado en el currículum.",
+    "proyecto_langchainagent": "## LangChainAgent\n\n**Repositorio:** `LangChainAgent`\n\n**Tipo:** Proyecto personal / aprendizaje\n**Lenguaje:** Python\n\n### Objetivo\n\nProyecto experimental desarrollado para aprender y trabajar con el ecosistema LangChain y arquitecturas basadas en agentes de Inteligencia Artificial.\n\nEl proyecto forma parte del proceso de aprendizaje práctico sobre sistemas que utilizan modelos de lenguaje junto con herramientas y lógica de ejecución.\n\n### Tecnologías\n\n* Python.\n* LangChain.\n* Large Language Models.\n* Agentes de IA.\n\n### Contexto\n\nEste proyecto representa una etapa del aprendizaje de Miguel en arquitecturas de agentes y constituye una base práctica para comprender posteriormente sistemas más complejos de orquestación.\n\nNo debe interpretarse por sí solo como evidencia de experiencia profesional con agentes."
+  },
+  "casos": [
+    {
+      "id": "f1_simple",
+      "tipo": "fiel",
+      "familia": "fiel_simple",
+      "contexto": "hiberus",
+      "answer": "Trabajé como programador en Hiberus Tecnología entre diciembre de 2022 y enero de 2025.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Una sola afirmación, literal en el contexto."
+    },
+    {
+      "id": "f2_rol_y_tecnologias",
+      "tipo": "fiel",
+      "familia": "fiel_simple",
+      "contexto": "hiberus",
+      "answer": "En el Banco Santander fui desarrollador Full Stack y usé React, Angular y GraphQL.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Rol y tecnologías bajo el encabezado 'Banco Santander'. Exige conectar el encabezado con lo que hay debajo."
+    },
+    {
+      "id": "f3_resumen",
+      "tipo": "fiel",
+      "familia": "fiel_resumen",
+      "contexto": "hiberus",
+      "answer": "En Hiberus combiné trabajo frontend, como en el Banco Ibercaja, con trabajo full stack, como en el Banco Santander.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Resumen que combina hechos del contexto sin añadir nada. Un verificador demasiado estricto lo marca como no respaldado."
+    },
+    {
+      "id": "f4_numero_exacto",
+      "tipo": "fiel",
+      "familia": "fiel_simple",
+      "contexto": "markas",
+      "answer": "En MARK’AS lideré un equipo de programación de 7 personas.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Número que coincide exactamente con el contexto."
+    },
+    {
+      "id": "f5_formacion",
+      "tipo": "fiel",
+      "familia": "fiel_simple",
+      "contexto": "perfil_formacion_idiomas",
+      "answer": "Soy Ingeniero en Ciencias Informáticas por la Universidad de las Ciencias Informáticas, en La Habana.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Formación literal en el contexto."
+    },
+    {
+      "id": "f6_parafrasis",
+      "tipo": "fiel",
+      "familia": "fiel_parafrasis",
+      "contexto": "perfil_formacion_idiomas",
+      "answer": "Mi lengua materna es el español y tengo un nivel B2 de inglés.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Paráfrasis directa de 'Español: lengua materna' e 'Inglés: nivel B2'."
+    },
+    {
+      "id": "f7_corrige_premisa",
+      "tipo": "fiel",
+      "familia": "fiel_corrige_premisa",
+      "contexto": "evolucion",
+      "answer": "No tengo constancia de haber trabajado en Google. Mi trayectoria documentada incluye CEIGE, GET, MARK’AS e Hiberus Tecnología.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Corrige una premisa falsa y enumera solo empresas del contexto. Es el comportamiento deseado ante a9."
+    },
+    {
+      "id": "f8_abstencion",
+      "tipo": "fiel",
+      "familia": "abstencion",
+      "contexto": "hiberus",
+      "answer": "No tengo esa información documentada.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Sin afirmaciones: lista vacía, isGrounded true."
+    },
+    {
+      "id": "f9_abstencion_con_tema",
+      "tipo": "fiel",
+      "familia": "abstencion",
+      "contexto": "hiberus",
+      "answer": "No tengo información documentada sobre si he trabajado con Kubernetes.",
+      "resultado_esperado": {
+        "isGrounded": true
+      },
+      "nota": "Menciona una tecnología, pero no afirma haberla usado. No debe extraerse como afirmación."
+    },
+    {
+      "id": "i1_fechas",
+      "tipo": "alucinacion",
+      "familia": "intrinseca",
+      "contexto": "hiberus",
+      "answer": "Trabajé en Hiberus Tecnología entre 2020 y 2025.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "Fechas que contradicen el contexto (diciembre de 2022 a enero de 2025)."
+    },
+    {
+      "id": "i2_numero",
+      "tipo": "alucinacion",
+      "familia": "intrinseca",
+      "contexto": "markas",
+      "answer": "En MARK’AS lideré un equipo de programación de 12 personas.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "Número que contradice el contexto (7 personas)."
+    },
+    {
+      "id": "i3_rol",
+      "tipo": "alucinacion",
+      "familia": "intrinseca",
+      "contexto": "hiberus",
+      "answer": "En el Banco Ibercaja fui desarrollador Full Stack.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "Rol que contradice el contexto (Front End). 'Full Stack' sí aparece en el contexto, pero en Santander."
+    },
+    {
+      "id": "e1_tecnologia_inventada",
+      "tipo": "alucinacion",
+      "familia": "extrinseca",
+      "contexto": "hiberus",
+      "answer": "En el Banco Santander usé React y Kubernetes.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "Kubernetes no aparece en ningún sitio del contexto."
+    },
+    {
+      "id": "e2_idioma_inventado",
+      "tipo": "alucinacion",
+      "familia": "extrinseca",
+      "contexto": "perfil_formacion_idiomas",
+      "answer": "Hablo español, inglés y francés.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "Francés no aparece en el contexto."
+    },
+    {
+      "id": "m1_verdad_y_exageracion",
+      "tipo": "alucinacion",
+      "familia": "mezcla_verdad_mentira",
+      "contexto": "hiberus",
+      "answer": "Trabajé en Hiberus Tecnología entre diciembre de 2022 y enero de 2025 como líder técnico de todos sus proyectos.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "Fechas correctas, pero el contexto solo atribuye liderazgo técnico a un proyecto concreto (notificaciones de estudiantes)."
+    },
+    {
+      "id": "m2_verdad_y_certificacion",
+      "tipo": "alucinacion",
+      "familia": "mezcla_verdad_mentira",
+      "contexto": "markas",
+      "answer": "En MARK’AS lideré un equipo de 7 personas y obtuve la certificación de Scrum Master.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "El equipo es correcto; el contexto menciona Scrum pero no ninguna certificación."
+    },
+    {
+      "id": "w1_asociacion_vue",
+      "tipo": "alucinacion",
+      "familia": "asociacion_equivocada",
+      "contexto": "hiberus_markas",
+      "answer": "En el Banco Santander trabajé con Vue.js.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "'Banco Santander' y 'Vue.js' existen en el contexto, pero Vue.js pertenece a Marina Hemingway. Las citas sueltas pasarían la comprobación en código: lo decide el modelo."
+    },
+    {
+      "id": "w2_asociacion_react",
+      "tipo": "alucinacion",
+      "familia": "asociacion_equivocada",
+      "contexto": "hiberus_ceige",
+      "answer": "En el proyecto para la Fiscalía General de la República de Cuba usé React.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "React existe en el contexto, pero en Hiberus; en la Fiscalía se usó Python y Django."
+    },
+    {
+      "id": "n1_promocion_indebida",
+      "tipo": "alucinacion",
+      "familia": "inferencia",
+      "contexto": "proyecto_langchainagent",
+      "answer": "Tengo experiencia profesional con agentes de IA gracias a mi proyecto LangChainAgent.",
+      "resultado_esperado": {
+        "isGrounded": false
+      },
+      "nota": "El contexto dice que el proyecto es de aprendizaje y que no debe interpretarse como experiencia profesional con agentes."
+    }
+  ]
+}

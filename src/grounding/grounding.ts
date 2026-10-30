@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 
 import "dotenv/config";
+import { GroundingInput } from "../../eval/types";
 
 
 export const ClaimSchema = z.object({
@@ -25,9 +26,6 @@ export type Claim        = z.infer<typeof ClaimSchema>;
 export type Verification = z.infer<typeof VerificationSchema>;
 export type GroundingResult = { claims: Claim[], isGrounded: boolean };
 
-type veryfyEnter = {
-  context: string, answer : string
-}
 
 const GROUNDING_MAX_TOKENS   = 600;
 const GROUNDING_TIMEOUT_MS   = 12000;
@@ -122,7 +120,7 @@ const groundingChain = RunnablePassthrough
   .pipe(checkQuotes)
   .withConfig({ runName: "verify-answer-grounded" });
 
-export async function verifyAnswerQuery(input: veryfyEnter,  config?: RunnableConfig): Promise<GroundingResult> {
+export async function verifyAnswerQuery(input: GroundingInput,  config?: RunnableConfig): Promise<GroundingResult> {
 
   return groundingChain.invoke(input, config);
 };
