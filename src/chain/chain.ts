@@ -44,6 +44,7 @@ export interface ChainResult {
     answer: string;
     outcome: ChainOutcome;
     truncated: boolean;
+    grounding: "verified" | "corrected" | "abstained" | "not_checked";
 }
 
 
@@ -152,6 +153,7 @@ const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) 
         answer,
         outcome,
         truncated: false,
+        grounding: "not_checked",
     })).withConfig({ runName });
 
 /**
@@ -167,6 +169,7 @@ const inDomain = retrivelResult
         answer:   input.answer,
         outcome:  "answered",
         truncated: input.truncated,
+        grounding: "not_checked",
     }))
 ).withConfig({ runName: "in-domain" })
 .withFallbacks([
