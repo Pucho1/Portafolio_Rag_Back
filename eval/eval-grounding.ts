@@ -2,7 +2,7 @@ import fs           from "node:fs/promises";
 import path         from "node:path";
 
 import { langFuseCallBack, registerTracing, shutdownTracing } from "../src/observability/langfuse";
-import { GroundingResult, verifyAnswerQuery } from "../src/grounding/grounding";
+import { verifyAnswerQuery } from "../src/grounding/grounding";
 import {
   Eval,
   GroundingCaseTipo,

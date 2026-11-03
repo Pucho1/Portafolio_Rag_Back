@@ -27,8 +27,8 @@ export type Verification = z.infer<typeof VerificationSchema>;
 export type GroundingResult = { claims: Claim[], isGrounded: boolean };
 
 
-const GROUNDING_MAX_TOKENS   = 600;
-const GROUNDING_TIMEOUT_MS   = 12000;
+const GROUNDING_MAX_TOKENS   = 2000;
+const GROUNDING_TIMEOUT_MS   = 35000;
 const GROUNDING_MAX_RETRIES  = 1;
 
 
