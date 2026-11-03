@@ -15,8 +15,6 @@ type RerankedOutput = HybridOutput & { rerankedDocuments: RerankedDocs[] };
 
 export async function getRetrieverResult(input: RouterOutput, config?: RunnableConfig): Promise<Document[]> {
 
-  console.log("query ======>: ", input.query)
-
   const chunks      = await retrievalStore.getChunks();
   const parents     = await retrievalStore.getParents();
   const vectorStore = await retrievalStore.getVectorStore();

@@ -11,6 +11,8 @@ import { getRetrieverResult }            from "../retriveal";
 import { initApp }                       from "../bootstrap";
 import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults }              from "../routing/router";
+import { GroundingResult, verifyAnswerQuery } from "../grounding/grounding";
+import { logStep }                   from "../observability/logger";
 
 const GENERATION_MAX_TOKENS = 800
 const GENERATION_TIMEOUT_MS = 15000
@@ -38,15 +40,20 @@ initApp().catch((error) => {
 
 export type ChainOutcome = "answered" | "rejected" | "invalid_input" | "error";
 
+export type GroundingStatus = "verified" | "corrected" | "abstained" | "not_checked";
+
 export interface ChainResult {
     question: string;
     context: string;
     answer: string;
     outcome: ChainOutcome;
     truncated: boolean;
-    grounding: "verified" | "corrected" | "abstained" | "not_checked";
+    grounding: GroundingStatus;
 }
 
+const ABSTENTION_MESSAGE = "No tengo información documentada suficiente para responder a eso con precisión.";
+
+type AnsweredInput = RouterOutput & { context: string; answer: string; truncated: boolean };
 
 /**
  * Clasifica la consulta y añade el resultado del enrutador al payload de entrada.
@@ -55,17 +62,20 @@ export interface ChainResult {
  * @returns Un objeto con la misma consulta y el resultado del router asociado.
  */
 const routerResult = RunnableLambda.from(
-    async (input: QueryInput, config?: RunnableConfig): Promise<RouterOutput> => ({
-        ...input,
-        routerResult: await getRouterResults(input.query, config),
-    })
+    async (input: QueryInput, config?: RunnableConfig): Promise<RouterOutput> => {
+        const routerResult = await getRouterResults(input.query, config);
+        logStep("router", input.query, routerResult.decision);
+
+        return { ...input, routerResult };
+    }
 )
 .withConfig({ runName: "router" })
 .withFallbacks([
-    RunnableLambda.from((input: QueryInput): RouterOutput => ({
-        ...input,
-        routerResult: { decision: { queryIntention: "router_error" } }
-    })).withConfig({ runName: "router-fallback" })
+    RunnableLambda.from((input: QueryInput): RouterOutput => {
+        logStep("router-fallback", input.query, { queryIntention: "router_error" });
+
+        return { ...input, routerResult: { decision: { queryIntention: "router_error" } } };
+    }).withConfig({ runName: "router-fallback" })
 ]);
 
 /**
@@ -77,7 +87,15 @@ const routerResult = RunnableLambda.from(
 const retrivelResult = RunnablePassthrough.assign<RouterOutput, { context: string }>({
     context: async (input, config: RunnableConfig) => {
         const documents = await getRetrieverResult(input, config);
-        return documents.map((doc: Document) => doc.pageContent).join("\n\n");
+        const context   = documents.map((doc: Document) => doc.pageContent).join("\n\n");
+
+        logStep("retrieval", input.query, {
+            documents: documents.length,
+            sections:  documents.map((doc: Document) => doc.pageContent.split("\n")[0].replace(/^#+\s*/, "")),
+            chars:     context.length,
+        });
+
+        return context;
     },
 }).withConfig({ runName: "retrieval" });
 
@@ -130,10 +148,13 @@ const getAnswer = RunnableLambda.from(
             context: input.context,
         }, config);
 
+        const truncated = message.response_metadata.finish_reason === "length";
+        logStep("get-answer", input.query, { chars: message.text.length, truncated, answer: message.text });
+
         return {
             ...input,
-            answer:    message.text,
-            truncated: message.response_metadata.finish_reason === "length",
+            answer: message.text,
+            truncated,
         };
     },
 
@@ -147,14 +168,49 @@ const getAnswer = RunnableLambda.from(
  * @returns Un runnable que, dada cualquier entrada con `query`, devuelve la respuesta fija.
  */
 const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) =>
-    RunnableLambda.from((input: Pick<QueryInput, "query">): ChainResult => ({
-        question: input.query,
-        context: "",
-        answer,
-        outcome,
-        truncated: false,
-        grounding: "not_checked",
-    })).withConfig({ runName });
+    RunnableLambda.from((input: Pick<QueryInput, "query">): ChainResult => {
+        logStep(runName, input.query, { outcome });
+
+        return {
+            question: input.query,
+            context: "",
+            answer,
+            outcome,
+            truncated: false,
+            grounding: "not_checked",
+        };
+    }).withConfig({ runName });
+
+
+/**
+ * Traduce el veredicto del verificador al estado de grounding de la cadena.
+ * Sin regeneración (paso actual), solo hay dos salidas: la respuesta pasa o el sistema se abstiene.
+ * @param param0 Resultado del grounding con los claims y el veredicto de isGrounded.
+ * @returns Un estado de grounding simplificado: "verified" si todos los claims están respaldados, "corrected" si hay al menos un claim sin respaldo, "abstained" si no hay claims, o "not_checked" si no se ha realizado la verificación.
+ */
+const toGroundingStatus = ({ claims, isGrounded }: GroundingResult): GroundingStatus => 
+    isGrounded ? "verified" : "abstained";
+;
+
+
+const checkGrounding = RunnableLambda.from(
+    async (input: AnsweredInput, config?: RunnableConfig) => {
+        const result    = await verifyAnswerQuery({ context: input.context, answer: input.answer }, config);
+        const grounding = toGroundingStatus(result);
+
+        logStep("grounding", input.query, {
+            status:      grounding,
+            claims:      result.claims.length,
+            unsupported: result.claims.filter((claim) => !claim.supported).map((claim) => claim.claim),
+        });
+
+        return {
+            ...input,
+            answer: grounding === "verified" ? input.answer : ABSTENTION_MESSAGE,
+            grounding,
+        };
+    }
+).withConfig({ runName: "grounding" })
 
 /**
  * Formatea el resultado final del flujo de respuesta en un objeto de salida estándar.
@@ -163,18 +219,23 @@ const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) 
  */
 const inDomain = retrivelResult
     .pipe(getAnswer)
-    .pipe(RunnableLambda.from((input: RouterOutput & { context: string; answer: string, truncated: boolean }): ChainResult => ({
-        question: input.query,
-        context:  input.context,
-        answer:   input.answer,
-        outcome:  "answered",
-        truncated: input.truncated,
-        grounding: "not_checked",
-    }))
-).withConfig({ runName: "in-domain" })
-.withFallbacks([
-    staticResponse(ERROR_MESSAGE, "error", "in-domain-response-fallback")
-]);
+    .pipe(checkGrounding)
+    .pipe(RunnableLambda.from((input: AnsweredInput & { grounding: GroundingStatus }): ChainResult => {
+        logStep("in-domain", input.query, { outcome: "answered", grounding: input.grounding });
+
+        return {
+            question: input.query,
+            context:  input.context,
+            answer:   input.answer,
+            outcome:  "answered",
+            truncated: input.truncated,
+            grounding: input.grounding,
+        };
+    })
+    ).withConfig({ runName: "in-domain" })
+    .withFallbacks([
+        staticResponse(ERROR_MESSAGE, "error", "in-domain-response-fallback")
+    ]);
 
 
 
