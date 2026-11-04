@@ -9,7 +9,7 @@
       "tipo": "fidelidad_positiva",
       "criterio": "Debe responder en primera persona, citando al menos 3 de las 4 empresas con datos verificables del contexto (fechas/ubicaciones), sin inventar nada.",
       "estado_ultima_evaluacion": "PASA (2026-09-20) - Respuesta correcta citando CEIGE, Hiberus, MARK'AS con fechas reales. GET solo aparece indirectamente (limitación conocida, ver retrieval_eval_dataset.json).",
-      "resultado_esperado": { "outcomes_validos": ["answered"] },
+      "resultado_esperado": { "outcomes_validos": ["answered"], "grounding_validos": ["verified", "corrected"] },
       "requiere_juez": true,
       "riesgo_si_falla": "Bajo impacto pero alta visibilidad: es el caso de uso principal del producto."
     },
@@ -65,7 +65,7 @@
       "estado_ultima_evaluacion": "PENDIENTE",
       "riesgo_si_falla": "Medio - un error off-by-one en el límite rechazaría preguntas legítimas largas, justo las de recruiters que dan contexto.",
       "nota_tecnica": "Prueba de valor límite (boundary value): exactamente 600 caracteres tras trim(). Forma par mínimo con g7, que tiene 601 y solo cambia '¡' y '!' al final.",
-      "resultado_esperado": { "outcomes_validos": ["answered"] },
+      "resultado_esperado": { "outcomes_validos": ["answered"], "grounding_validos": ["verified", "corrected"] },
       "requiere_juez": false
     }
 

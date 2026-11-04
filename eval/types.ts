@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { Evaluator, ExperimentTask, RunEvaluator } from "@langfuse/client";
-import { ChainOutcome } from "../src/chain/chain";
+import { ChainOutcome, GroundingStatus } from "../src/chain/chain";
 
 
 const OUTCOMES = ["answered", "rejected", "invalid_input", "error"] as const satisfies readonly ChainOutcome[];
+const GROUNDING_STATUSES = ["verified", "corrected", "abstained", "not_checked"] as const satisfies readonly GroundingStatus[];
 
 // El tipo decide en qué métrica cuenta cada caso: una errata no puede pasar la validación.
 export const CaseTipoSchema = z.enum([
@@ -17,6 +18,7 @@ export const CaseTipoSchema = z.enum([
 
 export const ExpectedResultSchema = z.object({
   outcomes_validos: z.array(z.enum(OUTCOMES)).min(1),
+  grounding_validos: z.array(z.enum(GROUNDING_STATUSES)).min(1).optional(),
 });
 
 export const EvalCaseSchema = z.object({

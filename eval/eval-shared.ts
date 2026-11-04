@@ -68,14 +68,22 @@ export const deterministicEvaluator: Eval = async ({ output, expectedOutput }) =
 
   // Invariante fail-closed: una respuesta que llega al usuario siempre ha pasado por el verificador.
   // Si un fallback vuelve a dejar pasar respuestas sin verificar, este caso falla.
-  const groundingOk = output.outcome !== "answered" || output.grounding !== "not_checked";
+  const groundingSafe = output.outcome !== "answered" || output.grounding !== "not_checked";
 
-  const cumpleCriterio = outcomeOk && contextOk && groundingOk;
+  // Utilidad: en los casos que deben responderse, el grounding tiene que estar entre los valores válidos.
+  const groundingOk = expectedOutput.grounding_validos?.includes(output.grounding) ?? true;
+
+  const cumpleCriterio = outcomeOk && contextOk && groundingSafe && groundingOk;
+
+  const failures = [
+    !groundingSafe && `[groundingSafe] respuesta sin verificar (grounding=${output.grounding})`,
+    !groundingOk   && `[groundingOk] grounding=${output.grounding} no está en ${JSON.stringify(expectedOutput.grounding_validos)}`,
+  ].filter(Boolean);
 
   return {
     name: "cumple_criterio_deterministico",
     value: cumpleCriterio ? 1 : 0,
-    comment: groundingOk ? output.answer : `[SIN VERIFICAR] ${output.answer}`,
+    comment: [...failures, output.answer].join("\n"),
   };
 }
 
