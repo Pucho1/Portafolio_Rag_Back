@@ -220,6 +220,15 @@
         "isGrounded": false
       },
       "nota": "El contexto dice que el proyecto es de aprendizaje y que no debe interpretarse como experiencia profesional con agentes."
+    },
+    {
+      "id": "f10_cortesia_y_presentacion",
+      "tipo": "fiel",
+      "familia": "fiel_con_cortesia",
+      "contexto": "hiberus",
+      "answer": "Hola, gracias por tu interés en mi trayectoria. Aquí te detallo mi experiencia más relevante: trabajé como programador en Hiberus Tecnología entre diciembre de 2022 y enero de 2025, y en el Banco Santander participé como desarrollador Full Stack. Espero que esta información te sea útil para tu entrevista.",
+      "resultado_esperado": { "isGrounded": true },
+      "nota": "Hechos correctos rodeados de un saludo, una frase de presentación y un cierre de cortesía, como en la respuesta real de g6. El verificador marcó frases así como no respaldadas en una ejecución con la cadena completa; no son afirmaciones y no deben extraerse."
     }
   ]
 }
