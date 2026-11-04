@@ -229,6 +229,15 @@
       "answer": "Hola, gracias por tu interés en mi trayectoria. Aquí te detallo mi experiencia más relevante: trabajé como programador en Hiberus Tecnología entre diciembre de 2022 y enero de 2025, y en el Banco Santander participé como desarrollador Full Stack. Espero que esta información te sea útil para tu entrevista.",
       "resultado_esperado": { "isGrounded": true },
       "nota": "Hechos correctos rodeados de un saludo, una frase de presentación y un cierre de cortesía, como en la respuesta real de g6. El verificador marcó frases así como no respaldadas en una ejecución con la cadena completa; no son afirmaciones y no deben extraerse."
+    },
+    {
+      "id": "f11_frase_que_introduce_lista",
+      "tipo": "fiel",
+      "familia": "fiel_con_presentacion",
+      "contexto": "hiberus",
+      "answer": "En Hiberus trabajé con las siguientes tecnologías: React, Angular y Node.js.",
+      "resultado_esperado": { "isGrounded": true },
+      "nota": "La frase introduce una lista respaldada por el contexto. Debe verificarse la lista, no la introducción."
     }
   ]
 }

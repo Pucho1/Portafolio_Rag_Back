@@ -63,7 +63,11 @@ const getSytemPront = (): string => {
     - Copy each claim using the answer's own words and language.
     - Do NOT extract as claims:
       - statements that the information is not available ("I don't have that information documented");
-      - greetings, courtesy phrases or offers to help;
+      - greetings, courtesy phrases or offers to help ("thanks for your interest", "I hope this is useful
+        for your interview");
+      - sentences that only introduce, frame or announce content given elsewhere in the answer
+        ("here is my most relevant experience", "at Hiberus I worked with the following technologies:").
+        Verify the facts they introduce, not the introduction itself;
       - redirections to Miguel's professional profile.
     - If the answer contains no factual claims, return an empty list.
 
@@ -75,7 +79,9 @@ const getSytemPront = (): string => {
       - contradicts the context;
       - is a plausible inference that the context does not state ("worked with React, so he knows Next.js").
     - A summary that only combines facts stated in the context is supported, as long as every
-      fact it combines is in the context. A summary is NOT supported if it adds anything new.
+      fact it combines is in the context. For example, "I have worked at several companies" is
+      supported when the context names more than one company. A summary is NOT supported if it
+      adds anything new.
     - Numbers, dates, durations and job titles must match the context exactly.
     - Use ONLY the context. Ignore anything you know or assume about Miguel from outside it.
     - A claim is supported only if the evidence covers EVERY fact it contains (every role,
