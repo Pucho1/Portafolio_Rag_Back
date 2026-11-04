@@ -1,5 +1,4 @@
-import { ChatOpenAI }           from "@langchain/openai";
-import { 
+import {
     RunnableBranch,
     RunnableConfig, 
     RunnableLambda, 
@@ -11,27 +10,16 @@ import { getRetrieverResult }            from "../retriveal";
 import { initApp }                       from "../bootstrap";
 import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults }              from "../routing/router";
-import { GroundingResult, verifyAnswerQuery } from "../grounding/grounding";
+import { verifyAnswerQuery }         from "../grounding/grounding";
 import { logStep }                   from "../observability/logger";
-
-const GENERATION_MAX_TOKENS = 800
-const GENERATION_TIMEOUT_MS = 15000
-const GENERATION_MAX_RETRIES = 1
+import { generationModel }           from "./model";
+import { correctAnswer, unsupportedClaims } from "./correction";
 
 const TOO_SHORT_THRESHOLD = 0;
 const TOO_LONG_THRESHOLD = 600;
 const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
 const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
 const ERROR_MESSAGE = "No he podido procesar tu pregunta ahora mismo, inténtalo de nuevo en unos segundos"
-
-const model = new ChatOpenAI({
-  model: "gpt-4o-mini",
-  temperature: 0,
-  maxTokens: GENERATION_MAX_TOKENS,
-  timeout: GENERATION_TIMEOUT_MS,
-  maxRetries: GENERATION_MAX_RETRIES,
-});
-
 
 initApp().catch((error) => {
   console.error("Error al inicializar la aplicación:", error);
@@ -132,7 +120,10 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
 ]);
 
 // Se construye una vez al cargar el módulo, no en cada petición
-const answerChain = chatPrompt.pipe(model);
+const answerChain = chatPrompt.pipe(generationModel);
+
+
+
 
 /**
  * Genera la respuesta final del modelo con el contexto recuperado y la pregunta del usuario.
@@ -183,32 +174,43 @@ const staticResponse = (answer: string, outcome: ChainOutcome, runName: string) 
 
 
 /**
- * Traduce el veredicto del verificador al estado de grounding de la cadena.
- * Sin regeneración (paso actual), solo hay dos salidas: la respuesta pasa o el sistema se abstiene.
- * @param param0 Resultado del grounding con los claims y el veredicto de isGrounded.
- * @returns Un estado de grounding simplificado: "verified" si todos los claims están respaldados, "corrected" si hay al menos un claim sin respaldo, "abstained" si no hay claims, o "not_checked" si no se ha realizado la verificación.
+ * Verifica la respuesta contra el contexto y, si no está respaldada, intenta corregirla una sola vez.
+ * - "verified":  la respuesta original está respaldada.
+ * - "corrected": la corrección ha pasado una segunda verificación.
+ * - "abstained": la corrección tampoco pasa y se sustituye por ABSTENTION_MESSAGE.
+ * @param input Entrada con la pregunta, el contexto y la respuesta generada.
+ * @param config Configuración de ejecución; propaga los callbacks para anidar la traza.
+ * @returns La misma entrada con la respuesta final y su estado de grounding.
  */
-const toGroundingStatus = ({ claims, isGrounded }: GroundingResult): GroundingStatus => 
-    isGrounded ? "verified" : "abstained";
-;
-
-
 const checkGrounding = RunnableLambda.from(
-    async (input: AnsweredInput, config?: RunnableConfig) => {
-        const result    = await verifyAnswerQuery({ context: input.context, answer: input.answer }, config);
-        const grounding = toGroundingStatus(result);
+    async (input: AnsweredInput, config?: RunnableConfig): Promise<AnsweredInput & { grounding: GroundingStatus }> => {
+        const result      = await verifyAnswerQuery({ context: input.context, answer: input.answer }, config);
+        const unsupported = unsupportedClaims(result);
 
-        logStep("grounding", input.query, {
-            status:      grounding,
-            claims:      result.claims.length,
-            unsupported: result.claims.filter((claim) => !claim.supported).map((claim) => claim.claim),
+        logStep("grounding", input.query, { isGrounded: result.isGrounded, claims: result.claims.length, unsupported });
+
+        if (result.isGrounded) return { ...input, grounding: "verified" };
+
+        // Un solo intento de corrección, con las afirmaciones sin respaldo como feedback
+        const corrected = await correctAnswer({
+            question: input.query,
+            context:  input.context,
+            answer:   input.answer,
+            unsupported,
+        }, config);
+
+        // La corrección también puede inventar: se verifica de nuevo antes de devolverla
+        const recheck = await verifyAnswerQuery({ context: input.context, answer: corrected.answer }, config);
+
+        logStep("correction", input.query, {
+            isGrounded:  recheck.isGrounded,
+            unsupported: unsupportedClaims(recheck),
+            answer:      corrected.answer,
         });
 
-        return {
-            ...input,
-            answer: grounding === "verified" ? input.answer : ABSTENTION_MESSAGE,
-            grounding,
-        };
+        return recheck.isGrounded
+            ? { ...input, answer: corrected.answer, truncated: corrected.truncated, grounding: "corrected" }
+            : { ...input, answer: ABSTENTION_MESSAGE, truncated: false, grounding: "abstained" };
     }
 ).withConfig({ runName: "grounding" })
 
