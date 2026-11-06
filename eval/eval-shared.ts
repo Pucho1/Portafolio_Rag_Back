@@ -4,7 +4,13 @@ import { Eval, EvalDataset, Task }           from "./types";
 import { ChainResult, runChain }             from "../src/chain/chain";
 import { langFuseCallBack }                  from "../src/observability/langfuse";
 import { judgeCriteria }                     from "../src/evaluación/judge/judge";
+import { initApp } from "../src/bootstrap";
 
+
+initApp().catch((error) => {
+  console.error("Error al inicializar la aplicación:", error);
+  process.exit(1);
+});
 
 /**
  * Obtiene los datos de entrada para el experimento a partir del dataset de evaluación.

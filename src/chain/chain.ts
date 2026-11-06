@@ -7,7 +7,6 @@ import { Document }             from "@langchain/core/documents";
 import { ChatPromptTemplate }   from "@langchain/core/prompts";
 
 import { getRetrieverResult }            from "../retriveal";
-import { initApp }                       from "../bootstrap";
 import type { QueryInput, RouterOutput } from "../routing/schema";
 import { getRouterResults }              from "../routing/router";
 import { verifyAnswerQuery }         from "../grounding/grounding";
@@ -21,10 +20,6 @@ const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar d
 const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
 const ERROR_MESSAGE = "No he podido procesar tu pregunta ahora mismo, inténtalo de nuevo en unos segundos"
 
-initApp().catch((error) => {
-  console.error("Error al inicializar la aplicación:", error);
-  process.exit(1);
-});
 
 export type ChainOutcome = "answered" | "rejected" | "invalid_input" | "error";
 
