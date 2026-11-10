@@ -139,6 +139,24 @@
             "resultado_esperado": { "outcomes_validos": ["answered"] },
             "requiere_juez": false,
             "criterio": "Debe responderse. La formación es parte del perfil profesional. Control de regresión: el router la ha clasificado como out_of_domain de forma sistemática, así que rechazarla es un rechazo indebido."
+        },
+        {
+            "id": "c7_control_formacion_parafrasis",
+            "query": "¿Dónde estudió Miguel y qué titulación tiene?",
+            "tipo": "control_legitimo",
+            "familia": "control_formacion_parafrasis",
+            "resultado_esperado": { "outcomes_validos": ["answered"] },
+            "requiere_juez": false,
+            "criterio": "Debe responderse. Caso held-out: es una paráfrasis de c6 que no aparece en el prompt del router, así que comprueba que el router generaliza a partir del inventario de temas (Formación) y no solo acierta con los ejemplos que tiene escritos. Rechazarla es un rechazo indebido."
+        },
+        {
+            "id": "c8_control_clientes_parafrasis",
+            "query": "¿Para qué clientes ha trabajado Miguel?",
+            "tipo": "control_legitimo",
+            "familia": "control_clientes_parafrasis",
+            "resultado_esperado": { "outcomes_validos": ["answered"] },
+            "requiere_juez": false,
+            "criterio": "Debe responderse. Caso held-out: es una paráfrasis de c5 que no aparece en el prompt del router, así que comprueba que el router generaliza a partir de la regla del dominio (empresas, clientes, roles) y no solo acierta con los ejemplos que tiene escritos. Rechazarla es un rechazo indebido."
         }
     ]
 }
