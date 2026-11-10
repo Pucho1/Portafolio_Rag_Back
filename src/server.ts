@@ -5,7 +5,15 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { langFuseCallBack, shutdownTracing } from "./observability/langfuse";
-import { ChainOutcome, runChain } from "./chain/chain";
+import { runChain } from "./chain/chain";
+import {
+    INTERNAL_ERROR_MESSAGE,
+    INVALID_REQUEST_MESSAGE,
+    NOT_FOUND_MESSAGE,
+    STATUS_BY_OUTCOME,
+    type ChatResponse,
+} from "./http/contract";
+import { ipLimiter } from "./http/rateLimit";
 
 const DEFAULT_PORT = 3000;
 
@@ -15,23 +23,8 @@ const SHUTDOWN_TIMEOUT_MS = 25_000;
 // 600 caracteres × 4 bytes (peor caso de UTF-8) son unos 2,4 KB; el resto es margen para el JSON que los envuelve
 const JSON_BODY_LIMIT = "8kb";
 
-const INVALID_REQUEST_MESSAGE = "La petición no tiene el formato esperado. Envía un JSON con el campo \"question\" de tipo texto.";
-const NOT_FOUND_MESSAGE       = "La ruta solicitada no existe.";
-const INTERNAL_ERROR_MESSAGE  = "Ha ocurrido un error inesperado. Inténtalo de nuevo más tarde.";
-
 // Solo la forma del cuerpo: la longitud la valida guardedChain dentro de la cadena, una sola fuente de verdad
 const ChatRequestSchema = z.object({ question: z.string() });
-
-// Respuesta pública: nunca expone context, grounding ni question
-type ChatResponse = { answer: string; outcome: ChainOutcome; truncated: boolean };
-
-// El Record obliga al compilador a exigir un código HTTP para cada outcome, también para los que se añadan
-const STATUS_BY_OUTCOME: Record<ChainOutcome, number> = {
-    answered:      200,
-    rejected:      200,
-    invalid_input: 400,
-    error:         503,
-};
 
 
 /**
@@ -101,10 +94,9 @@ async function main() {
 
     const app = express();
 
-    app.use(express.json({ limit: JSON_BODY_LIMIT }));
-
+    // El limitador va primero para no leer el cuerpo de una petición que se va a rechazar.
     // Sin try/catch: Express 5 manda al errorHandler las promesas rechazadas de los handlers async
-    app.post("/chat", async (req, res) => {
+    app.post("/chat", ipLimiter, express.json({ limit: JSON_BODY_LIMIT }), async (req, res) => {
         const parsed = ChatRequestSchema.safeParse(req.body);
 
         if (!parsed.success) {
