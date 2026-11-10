@@ -34,6 +34,7 @@
     "cohere-ai": "^7.21.0",
     "dotenv": "^16.4.5",
     "express": "^5.3.0",
+    "express-rate-limit": "8.7.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
