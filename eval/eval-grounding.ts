@@ -15,15 +15,9 @@ import {
 } from "./types";
 import { ExperimentTask, LangfuseClient, type ExperimentItemResult } from "@langfuse/client";
 import { getGitVersion } from './eval-shared';
-import { initApp } from "../src/bootstrap";
 
 type ItemResult = ExperimentItemResult<GroundingInput, GroundingExpectedResult, GroundingMetadata>;
 
-
-initApp().catch((error) => {
-  console.error("Error al inicializar la aplicación:", error);
-  process.exit(1);
-});
 
 // Initialize client
 const langfuse = new LangfuseClient();

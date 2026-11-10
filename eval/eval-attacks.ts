@@ -5,6 +5,7 @@ import { LangfuseClient, type ExperimentItemResult } from "@langfuse/client";
 
 import { CaseInput, CaseMetadata, CaseTipo, EvalDatasetSchema, ExpectedResult, RunEval } from "./types";
 import { shutdownTracing } from "../src/observability/langfuse";
+import { initApp } from "../src/bootstrap";
 import type { ChainOutcome } from "../src/chain/chain";
 import {
   deterministicEvaluator,
@@ -16,9 +17,6 @@ import {
 
 
 type ItemResult = ExperimentItemResult<CaseInput, ExpectedResult, CaseMetadata>;
-
-
-
 
 // Initialize client
 const langfuse = new LangfuseClient();
@@ -100,6 +98,7 @@ const attackMetrics = (expectedIds: string[]): RunEval => async ({ itemResults }
 
 
 async function main() {
+  await initApp();
   const filePath = path.resolve(process.cwd(), "eval", "attack_eval_dataset.json");
   const contents = await fs.readFile(filePath, { encoding: "utf8" });
   const dataset  = EvalDatasetSchema.parse(JSON.parse(contents));
