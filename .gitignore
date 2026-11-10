@@ -191,3 +191,6 @@ $RECYCLE.BIN/
 domainCatalog.json
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode,node
+
+# Cuerpo de prueba de más de 8 kb: se genera con node -e, no se versiona
+requests/chat/huge.json
