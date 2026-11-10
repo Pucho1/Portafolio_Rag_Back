@@ -131,17 +131,15 @@ export async function ingestDoc(): Promise<{ chunks: Document[]; parents: Map<st
 
   const enrichedDocuments = enrichDocumentMetadata(documentsLoders, dataDir);
 
-  const catalog = buildDomainCatalog(enrichedDocuments);
-  await persistDomainCatalog(catalog);
+  
 
 
   const {chunks, parents} = await splitMarkdownDocuments(enrichedDocuments);
 
+  // Después del split: los Parents ya traen category y parentTitle
+  const catalog = buildDomainCatalog([...parents.values()]);
+  await persistDomainCatalog(catalog);
+
 
   return {  chunks, parents };
 }
-
-ingestDoc().catch((error) => {
-  console.error("Error en la ingestión contextual:", error);
-  process.exit(1);
-});
