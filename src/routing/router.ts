@@ -81,7 +81,7 @@ const getSytemPront = (domainCatalog: DomainCatalog) => {
       outside it. "What did Miguel build with the weather API?" is in_domain because it asks about his work.
       If the question is about any listed topic, it is in_domain.
       "¿Qué estudios tiene Miguel?" is in_domain (topic: Formación).
-      "¿En qué empresas ha trabajado Miguel?" is in_domain (topic: experience).
+      "¿En qué empresas ha trabajado Miguel?" is in_domain (topic:  Hiberus Tecnología).
     - out_of_domain: the question asks about anything else: general knowledge, current events, other
       people, or tasks unrelated to the profile. "What's the weather in Madrid?" is out_of_domain even though
       one of Miguel's projects is about weather.
