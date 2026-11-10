@@ -194,3 +194,6 @@ domainCatalog.json
 
 # Cuerpo de prueba de más de 8 kb: se genera con node -e, no se versiona
 requests/chat/huge.json
+
+# Scripts de experimentos locales: no forman parte del proyecto
+scratch/
