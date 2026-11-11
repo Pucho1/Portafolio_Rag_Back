@@ -1,11 +1,11 @@
 import { initApp } from "./bootstrap";
-import express, { type ErrorRequestHandler } from "express";
+import express, { type ErrorRequestHandler, type Request, type Response } from "express";
 import type { Server } from "node:http";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { langFuseCallBack, shutdownTracing } from "./observability/langfuse";
-import { runChain } from "./chain/chain";
+import { REJECTION_LARGE_MESSAGE, isQueryLengthValid, runChain } from "./chain/chain";
 import {
     INTERNAL_ERROR_MESSAGE,
     INVALID_REQUEST_MESSAGE,
@@ -19,6 +19,7 @@ import {
     createGlobalLimiter,
     ipLimiter,
 } from "./http/rateLimit";
+import { StageCallbackHandler, checkStageEvents, openEventStream, sendEvent } from "./http/sse";
 
 const DEFAULT_PORT = 3000;
 
@@ -30,6 +31,39 @@ const JSON_BODY_LIMIT = "8kb";
 
 // Solo la forma del cuerpo: la longitud la valida guardedChain dentro de la cadena, una sola fuente de verdad
 const ChatRequestSchema = z.object({ question: z.string() });
+
+/**
+ * Valida la forma del cuerpo, compartida por /chat y /chat/stream.
+ * Si no es válida, responde 400 en JSON.
+ * @param req Petición con el cuerpo ya leído por express.json.
+ * @param res Respuesta; solo se usa si el cuerpo no es válido.
+ * @returns La pregunta, o undefined si ya se respondió con 400.
+ */
+const parseQuestion = (req: Request, res: Response): string | undefined => {
+    const parsed = ChatRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+        console.log("[http] invalid request body");
+        res.status(400).json({ answer: INVALID_REQUEST_MESSAGE, outcome: "invalid_input", truncated: false } satisfies ChatResponse);
+        return undefined;
+    }
+
+    return parsed.data.question;
+};
+
+/**
+ * Crea un AbortController que se aborta si el cliente cierra la conexión antes de recibir la respuesta.
+ * Evita seguir gastando llamadas al modelo para nadie.
+ * @param res Respuesta HTTP.
+ * @returns El controller; su signal se pasa a runChain.
+ */
+const abortOnClientClose = (res: Response): AbortController => {
+    const controller = new AbortController();
+    res.on("close", () => {
+        if (!res.writableEnded) controller.abort();
+    });
+    return controller;
+};
 
 
 /**
@@ -105,23 +139,44 @@ async function main() {
 
     console.log(`[server] index ready in ${Math.round(performance.now() - indexStart)}ms`);
 
+    // Los estados son UX, no seguridad: si fallan, el servidor se degrada y avisa, pero sigue arrancando
+    if (await checkStageEvents()) {
+        console.log("[server] stage events check: ok");
+    } else {
+        console.error("[server] stage events are NOT being emitted: check handleChainStart argument order after a @langchain/core upgrade");
+    }
+
     const app = express();
 
     // Los limitadores van primero para no leer el cuerpo de una petición que se va a rechazar.
     // Primero el límite por IP, para que un solo abusador no consuma el presupuesto global.
     // Sin try/catch: Express 5 manda al errorHandler las promesas rechazadas de los handlers async
     app.post("/chat", ipLimiter, globalLimiter, express.json({ limit: JSON_BODY_LIMIT }), async (req, res) => {
-        const parsed = ChatRequestSchema.safeParse(req.body);
+        const question = parseQuestion(req, res);
+        if (question === undefined) return;
 
-        if (!parsed.success) {
-            console.log("[http] invalid request body");
-            res.status(400).json({ answer: INVALID_REQUEST_MESSAGE, outcome: "invalid_input", truncated: false } satisfies ChatResponse);
-            return;
-        }
+        const controller = abortOnClientClose(res);
 
         // Un handler nuevo por petición: cada una es su propia sesión en Langfuse
         const handler = langFuseCallBack(randomUUID(), "anonymous");
-        const result  = await runChain(parsed.data.question, { callbacks: [handler] });
+
+        let result;
+        try {
+            result = await runChain(question, { callbacks: [handler], signal: controller.signal });
+        } catch (error) {
+            // Si el cliente se fue, no hay a quién responder; cualquier otro error va al errorHandler
+            if (controller.signal.aborted) {
+                console.log("[http] client disconnected, chain aborted");
+                return;
+            }
+            throw error;
+        }
+
+        if (controller.signal.aborted) {
+            console.log("[http] client disconnected, chain aborted");
+            return;
+        }
+
         const status  = STATUS_BY_OUTCOME[result.outcome];
 
         // Campos uno a uno: context, grounding y question no salen del servidor
@@ -129,6 +184,56 @@ async function main() {
 
         console.log(`[http] POST /chat -> ${status} ${result.outcome}`);
         res.status(status).json(body);
+    });
+
+    // Stream SSE: solo estados de progreso y, al final, la respuesta ya verificada. Nunca contenido sin verificar.
+    app.post("/chat/stream", ipLimiter, globalLimiter, express.json({ limit: JSON_BODY_LIMIT }), async (req, res) => {
+        const question = parseQuestion(req, res);
+        if (question === undefined) return;
+
+        // Se LLAMA a la misma función de la cadena, no se reescribe la regla (la cadena cuenta tras trim()).
+        // Va antes de abrir el stream para que una pregunta inválida reciba un 400 en JSON.
+        if (!isQueryLengthValid({ query: question })) {
+            res.status(400).json({ answer: REJECTION_LARGE_MESSAGE, outcome: "invalid_input", truncated: false } satisfies ChatResponse);
+            return;
+        }
+
+        // A partir de aquí ya no se puede cambiar el código de estado
+        openEventStream(res);
+        sendEvent(res, "stage", { stage: "thinking" });
+
+        const controller = abortOnClientClose(res);
+
+        // Aquí SÍ hace falta try/catch: con las cabeceras ya enviadas, el errorHandler no puede responder con JSON
+        try {
+            const langfuseHandler = langFuseCallBack(randomUUID(), "anonymous");
+            const stageHandler    = new StageCallbackHandler((stage) => sendEvent(res, "stage", { stage }));
+
+            const result = await runChain(question, { callbacks: [langfuseHandler, stageHandler], signal: controller.signal });
+
+            if (controller.signal.aborted) {
+                console.log("[http] client disconnected, chain aborted");
+                return;
+            }
+
+            // Campos uno a uno: context, grounding y question no salen del servidor
+            const body: ChatResponse = { answer: result.answer, outcome: result.outcome, truncated: result.truncated };
+            const event = result.outcome === "error" ? "error" : "answer";
+
+            sendEvent(res, event, body);
+            console.log(`[http] POST /chat/stream -> ${event} ${result.outcome}`);
+            res.end();
+        } catch (error) {
+            if (controller.signal.aborted) {
+                console.log("[http] client disconnected, chain aborted");
+                return;
+            }
+
+            // Nunca se envía error.message al cliente: el detalle solo va al log
+            console.error("[http] stream failed:", error);
+            sendEvent(res, "error", { answer: INTERNAL_ERROR_MESSAGE, outcome: "error", truncated: false } satisfies ChatResponse);
+            res.end();
+        }
     });
 
     // 404 en JSON para cualquier otra ruta

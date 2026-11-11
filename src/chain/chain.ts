@@ -17,8 +17,11 @@ import { correctAnswer, unsupportedClaims } from "./correction";
 const TOO_SHORT_THRESHOLD = 0;
 const TOO_LONG_THRESHOLD = 600;
 const REJECTION_MESSAGE = "Soy el gemelo digital de Miguel y solo puedo hablar de su perfil profesional: experiencia, proyectos, habilidades y trayectoria. ¿Quieres saber algo sobre eso?.";
-const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
+export const REJECTION_LARGE_MESSAGE = `Tu pregunta no cumple con los requisitos de longitud; debe tener como máximo ${TOO_LONG_THRESHOLD} caracteres y no puede ser vacía.`;
 const ERROR_MESSAGE = "No he podido procesar tu pregunta ahora mismo, inténtalo de nuevo en unos segundos"
+
+// El handler de estados del servidor depende de estos nombres: una sola fuente de verdad
+export const RUN_NAMES = { retrieval: "retrieval", getAnswer: "get-answer" } as const;
 
 
 export type ChainOutcome = "answered" | "rejected" | "invalid_input" | "error";
@@ -80,7 +83,7 @@ const retrivelResult = RunnablePassthrough.assign<RouterOutput, { context: strin
 
         return context;
     },
-}).withConfig({ runName: "retrieval" });
+}).withConfig({ runName: RUN_NAMES.retrieval });
 
 const SYSTEM_PROMPT = `
     Eres el gemelo digital de Miguel Antonio Martínez Ochandarena, hablando en primera persona como si fueras él.
@@ -144,7 +147,7 @@ const getAnswer = RunnableLambda.from(
         };
     },
 
-).withConfig({ runName: "get-answer" });
+).withConfig({ runName: RUN_NAMES.getAnswer });
 
 /**
  * Crea una rama terminal que devuelve un ChainResult fijo sin contexto.
@@ -286,7 +289,7 @@ const finalResult = routerResult.pipe(branch);
  * @param input 
  * @returns  Un objeto con la pregunta, el contexto y la respuesta final generada por el modelo.
  */
-const isQueryLengthValid = (input: QueryInput): boolean => {
+export const isQueryLengthValid = (input: QueryInput): boolean => {
     const length = input.query.trim().length;
     return TOO_SHORT_THRESHOLD < length && length <= TOO_LONG_THRESHOLD;
 };

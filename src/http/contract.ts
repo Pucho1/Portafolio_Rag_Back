@@ -13,6 +13,12 @@ export const CAPACITY_MESSAGE        = "El servicio ha alcanzado su capacidad po
 // Respuesta pública: nunca expone context, grounding ni question
 export type ChatResponse = { answer: string; outcome: ChainOutcome; truncated: boolean };
 
+// Estados de progreso que emite POST /chat/stream antes de la respuesta verificada
+export type Stage = "thinking" | "searching" | "writing";
+
+// Eventos SSE de POST /chat/stream
+export type StreamEventName = "stage" | "answer" | "error";
+
 // El Record obliga al compilador a exigir un código HTTP para cada outcome, también para los que se añadan
 export const STATUS_BY_OUTCOME: Record<ChainOutcome, number> = {
     answered:      200,
