@@ -8,6 +8,7 @@ export const INVALID_REQUEST_MESSAGE = "La petición no tiene el formato esperad
 export const NOT_FOUND_MESSAGE       = "La ruta solicitada no existe.";
 export const INTERNAL_ERROR_MESSAGE  = "Ha ocurrido un error inesperado. Inténtalo de nuevo más tarde.";
 export const RATE_LIMIT_MESSAGE      = "Has hecho demasiadas preguntas seguidas. Espera un momento y vuelve a intentarlo.";
+export const CAPACITY_MESSAGE        = "El servicio ha alcanzado su capacidad por hoy. Vuelve a intentarlo más tarde.";
 
 // Respuesta pública: nunca expone context, grounding ni question
 export type ChatResponse = { answer: string; outcome: ChainOutcome; truncated: boolean };

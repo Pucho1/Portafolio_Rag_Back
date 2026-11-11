@@ -13,7 +13,12 @@ import {
     STATUS_BY_OUTCOME,
     type ChatResponse,
 } from "./http/contract";
-import { ipLimiter } from "./http/rateLimit";
+import {
+    DEFAULT_GLOBAL_DAILY_LIMIT,
+    MAX_GLOBAL_DAILY_LIMIT,
+    createGlobalLimiter,
+    ipLimiter,
+} from "./http/rateLimit";
 
 const DEFAULT_PORT = 3000;
 
@@ -63,27 +68,35 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
 
 
 /**
- * Lee el puerto del entorno (Twelve-Factor, factor III).
- * Sin PORT se usa DEFAULT_PORT; un valor que no sea un entero entre 1 y 65535 es un error de configuración.
- * @returns El puerto en el que escuchará el servidor.
- * @throws Error si PORT está definida pero no es un puerto válido.
+ * Lee un entero positivo del entorno (Twelve-Factor, factor III).
+ * Sin la variable se usa defaultValue; un valor que no sea un entero entre 1 y max es un error de configuración.
+ * @param name Nombre de la variable de entorno.
+ * @param defaultValue Valor si la variable no está definida.
+ * @param max Valor máximo permitido, incluido.
+ * @returns El entero leído, o defaultValue.
+ * @throws Error si la variable está definida pero no es un entero entre 1 y max.
  */
-const readPort = (): number => {
-    const raw = process.env.PORT;
-    if (raw === undefined) return DEFAULT_PORT;
+const readPositiveInt = (name: string, defaultValue: number, max: number): number => {
+    const raw = process.env[name];
+    if (raw === undefined) return defaultValue;
 
-    const port = Number(raw);
-    if (!/^\d+$/.test(raw) || port < 1 || port > 65535) {
-        throw new Error(`Invalid PORT: "${raw}"`);
+    const value = Number(raw);
+    if (!/^\d+$/.test(raw) || value < 1 || value > max) {
+        throw new Error(`Invalid ${name}: "${raw}"`);
     }
 
-    return port;
+    return value;
 };
 
 
 async function main() {
 
-    const port = readPort(); // dentro de main para que un PORT inválido termine en main().catch
+    // Dentro de main para que una configuración inválida termine en main().catch
+    const port             = readPositiveInt("PORT", DEFAULT_PORT, 65535);
+    const globalDailyLimit = readPositiveInt("GLOBAL_DAILY_LIMIT", DEFAULT_GLOBAL_DAILY_LIMIT, MAX_GLOBAL_DAILY_LIMIT);
+    const globalLimiter    = createGlobalLimiter(globalDailyLimit);
+
+    console.log(`[server] global daily limit: ${globalDailyLimit}`);
 
     console.log("[server] indexing...");
     const indexStart = performance.now();
@@ -94,9 +107,10 @@ async function main() {
 
     const app = express();
 
-    // El limitador va primero para no leer el cuerpo de una petición que se va a rechazar.
+    // Los limitadores van primero para no leer el cuerpo de una petición que se va a rechazar.
+    // Primero el límite por IP, para que un solo abusador no consuma el presupuesto global.
     // Sin try/catch: Express 5 manda al errorHandler las promesas rechazadas de los handlers async
-    app.post("/chat", ipLimiter, express.json({ limit: JSON_BODY_LIMIT }), async (req, res) => {
+    app.post("/chat", ipLimiter, globalLimiter, express.json({ limit: JSON_BODY_LIMIT }), async (req, res) => {
         const parsed = ChatRequestSchema.safeParse(req.body);
 
         if (!parsed.success) {
