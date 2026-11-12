@@ -20,6 +20,7 @@ import {
     ipLimiter,
 } from "./http/rateLimit";
 import { StageCallbackHandler, checkStageEvents, openEventStream, sendEvent } from "./http/sse";
+import { createCorsMiddleware, parseAllowedOrigins } from "./http/cors";
 
 const DEFAULT_PORT = 3000;
 
@@ -129,8 +130,10 @@ async function main() {
     const port             = readPositiveInt("PORT", DEFAULT_PORT, 65535);
     const globalDailyLimit = readPositiveInt("GLOBAL_DAILY_LIMIT", DEFAULT_GLOBAL_DAILY_LIMIT, MAX_GLOBAL_DAILY_LIMIT);
     const globalLimiter    = createGlobalLimiter(globalDailyLimit);
+    const allowedOrigins   = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 
     console.log(`[server] global daily limit: ${globalDailyLimit}`);
+    console.log(`[server] allowed origins: ${allowedOrigins.join(", ")}`);
 
     console.log("[server] indexing...");
     const indexStart = performance.now();
@@ -147,6 +150,9 @@ async function main() {
     }
 
     const app = express();
+
+    // CORS va antes que todo: los preflight OPTIONS se responden aquí y no gastan cupo de los limitadores
+    app.use(createCorsMiddleware(allowedOrigins));
 
     // Los limitadores van primero para no leer el cuerpo de una petición que se va a rechazar.
     // Primero el límite por IP, para que un solo abusador no consuma el presupuesto global.
