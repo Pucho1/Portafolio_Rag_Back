@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "tsx src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:ingestion": "tsx src/ingestion/ingest-cli.ts",
     "dev:embeddings": "tsx src/experiments/embeddings.ts",
@@ -36,13 +37,16 @@
     "dotenv": "^16.4.5",
     "express": "^5.3.0",
     "express-rate-limit": "8.7.1",
+    "tsx": "^4.23.12",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.4.0",
-    "tsx": "^4.23.12",
     "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
