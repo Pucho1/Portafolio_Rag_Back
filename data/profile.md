@@ -28,7 +28,7 @@ Ha trabajado con conceptos y tecnologías relacionados con:
 * Orquestación de sistemas basados en modelos de lenguaje.
 * Herramientas y servicios para ampliar las capacidades de sistemas de IA.
 
-Ha desarrollado proyectos personales relacionados con agentes de IA, MCP y sistemas RAG, utilizando diferentes tecnologías y lenguajes de programación.
+Profesionalmente, desarrolla herramientas de IA para el Servicio Aragonés de Salud en Hiberus (RAG, embeddings, LangChain, Langfuse, FastMCP) y desarrolló un agente de IA con MCP para la web de VisNova en MARK’AS. Además, ha desarrollado proyectos personales relacionados con agentes de IA, MCP y sistemas RAG, como el gemelo digital de su portafolio.
 
 Su objetivo es combinar su experiencia previa como desarrollador de software con las nuevas arquitecturas y herramientas necesarias para construir sistemas de Inteligencia Artificial robustos y utilizables en entornos reales.
 
@@ -48,7 +48,7 @@ También posee experiencia trabajando con metodologías ágiles, incluyendo Scru
 
 ## Formación
 
-Es Ingeniero en Ciencias Informáticas por la Universidad de las Ciencias Informáticas (UCI), en La Habana, Cuba, con estudios realizados entre septiembre de 2011 y julio de 2017.
+Es Ingeniero en Ciencias Informáticas por la Universidad de las Ciencias Informáticas (UCI), en La Habana, Cuba, con estudios iniciados en septiembre de 2011 y graduado en 2016.
 
 Durante su formación universitaria participó en proyectos de investigación, actividades académicas y concursos de programación.
 
@@ -76,7 +76,7 @@ Sus principales áreas de experiencia y desarrollo incluyen:
 
 Español: lengua materna.
 
-Inglés: nivel B2 indicado en el currículum.
+Inglés: B2 en comprensión auditiva y B1 en comprensión lectora, expresión oral y escrita (según el currículum).
 
 ## Alcance del gemelo digital
 
