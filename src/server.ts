@@ -131,9 +131,12 @@ async function main() {
     const globalDailyLimit = readPositiveInt("GLOBAL_DAILY_LIMIT", DEFAULT_GLOBAL_DAILY_LIMIT, MAX_GLOBAL_DAILY_LIMIT);
     const globalLimiter    = createGlobalLimiter(globalDailyLimit);
     const allowedOrigins   = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
+    // Saltos de proxy delante del servidor (Railway: 1). Sin la variable, 0: en local no hay proxy y no se confía en X-Forwarded-For
+    const trustProxyHops   = process.env.TRUST_PROXY_HOPS === undefined ? 0 : readPositiveInt("TRUST_PROXY_HOPS", 1, 10);
 
     console.log(`[server] global daily limit: ${globalDailyLimit}`);
     console.log(`[server] allowed origins: ${allowedOrigins.join(", ")}`);
+    console.log(`[server] trust proxy hops: ${trustProxyHops}`);
 
     console.log("[server] indexing...");
     const indexStart = performance.now();
@@ -150,6 +153,14 @@ async function main() {
     }
 
     const app = express();
+
+    // Detrás de un proxy, req.ip es la IP real del visitante y no la del proxy: el límite por IP funciona por usuario
+    if (trustProxyHops > 0) app.set("trust proxy", trustProxyHops);
+
+    // Para el healthcheck de la plataforma: el servidor solo escucha cuando el índice ya está cargado
+    app.get("/health", (_req, res) => {
+        res.json({ status: "ok" });
+    });
 
     // CORS va antes que todo: los preflight OPTIONS se responden aquí y no gastan cupo de los limitadores
     app.use(createCorsMiddleware(allowedOrigins));

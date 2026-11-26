@@ -13,8 +13,8 @@ export const DEFAULT_GLOBAL_DAILY_LIMIT = Math.floor(MONTHLY_BUDGET_USD / 30 / C
 export const MAX_GLOBAL_DAILY_LIMIT     = 100_000;
 const GLOBAL_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// TODO(despliegue): configurar `trust proxy` en la app. Sin él, detrás de un proxy o balanceador
-// req.ip será la IP del proxy y todos los usuarios compartirán el mismo contador.
+// Detrás de un proxy o balanceador hay que definir TRUST_PROXY_HOPS (server.ts): sin él,
+// req.ip sería la IP del proxy y todos los usuarios compartirían el mismo contador.
 export const ipLimiter = rateLimit({
     windowMs: IP_WINDOW_MS,
     limit:    IP_LIMIT_PER_WINDOW,
